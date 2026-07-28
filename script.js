@@ -1,7 +1,6 @@
 const SUPABASE_URL = "https://hrqqriybcpmnsinswyop.supabase.co";
 const SUPABASE_KEY = "sb_publishable_BEGEdQzqZc2FtPrPgJPh9Q_CQMHioqM";
 
-// MUDANÇA AQUI: Trocamos o nome para 'client' para não dar conflito com a biblioteca
 const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let congelado = false;
@@ -282,3 +281,42 @@ async function carregarConvidados() {
     }
     const contador = document.getElementById('conv-contador');
     if(contador) contador.innerText = `Presentes: ${presentes} | Total: ${data ? data.length : 0}`;
+  } catch(e) { console.error(e); }
+}
+
+async function adicionarConvidado() {
+  const nome = document.getElementById('conv-novo-nome').value;
+  if(!nome || !client) return;
+  await client.from('convidados').insert({ nome, presente: false });
+  document.getElementById('conv-novo-nome').value = '';
+  carregarConvidados();
+}
+
+async function togglePresenca(id, status) {
+  if(!client) return;
+  await client.from('convidados').update({ presente: !status }).eq('id', id);
+  carregarConvidados();
+}
+
+async function deletarConvidado(id) {
+  if(!client) return;
+  await client.from('convidados').delete().eq('id', id);
+  carregarConvidados();
+}
+
+function ouvirFotosDosConvidados() {
+  const lista = document.getElementById('lista-desafios-stream');
+  if(!client) return;
+  client.channel('stream-controle').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'fotos_desafios' }, payload => {
+    const f = payload.new;
+    if(lista) {
+      lista.innerHTML = `<div class="desafio-item"><img src="${f.url}" class="desafio-thumb"><div class="desafio-text"><b>${f.desafio}</b> enviado agora!</div></div>` + lista.innerHTML;
+    }
+  }).subscribe();
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', inicializarSistemaPorPagina);
+} else {
+  inicializarSistemaPorPagina();
+}
