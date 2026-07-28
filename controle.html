@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Torre de Comando - 15 Anos Catarina</title>
+    <link href="https://googleapis.com" rel="stylesheet">
+    
+    <!-- CARREGAMENTO DO SUPABASE NO TOPO DO ARQUIVO -->
+    <script src="https://jsdelivr.net"></script>
+    
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background-color: #FDE8EF !important; font-family: 'Cinzel', serif; color: #7A4F0E; padding: 20px; }
+        #controls { display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 600px; margin: 0 auto; text-align: center; }
+        .mode-nav { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; justify-content: center; width: 100%; }
+        .mode-btn { background: #ffffff; border: 1px solid rgba(200,150,62,0.5); color: #9B6B1A; padding: 10px 16px; border-radius: 20px; font-size: 11px; cursor: pointer; letter-spacing: 0.05em; transition: all 0.3s; text-transform: uppercase; font-weight: 600; }
+        .mode-btn:hover, .mode-btn.active { background: rgba(200,150,62,0.15); border-color: #C8963E; color: #7A4F0E; box-shadow: 0 2px 8px rgba(200,150,62,0.1); }
+        .freeze-bar { display: flex; justify-content: center; margin-bottom: 24px; width: 100%; }
+        .freeze-btn { background: #ffffff; border: 1px solid rgba(210,3,119,0.4); color: #cd0277; padding: 10px 24px; border-radius: 20px; font-size: 11px; cursor: pointer; letter-spacing: 0.08em; transition: all 0.3s; text-transform: uppercase; font-weight: bold; }
+        .freeze-btn.frozen { background: #cd0277; color: #ffffff; }
+        .screen { display: none; flex-direction: column; align-items: center; width: 100%; }
+        .screen.active { display: flex; }
+        .section-title { font-size: 1.6rem; color: #cd0277; font-weight: 600; margin-bottom: 0.4rem; letter-spacing: 0.05em; }
+        .section-sub { font-family: 'Playfair Display', serif; font-style: italic; font-size: 1rem; color: #9B6B1A; margin-bottom: 1.5rem; }
+        .moment-btns { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; width: 100%; }
+        .moment-btn { background: #ffffff; border: 1px solid rgba(200,150,62,0.4); color: #7A4F0E; padding: 12px 20px; border-radius: 25px; font-size: 12px; cursor: pointer; font-weight: 600; text-transform: uppercase; transition: all 0.2s; width: 100%; max-width: 260px; }
+        .moment-btn:hover { background: #cd0277; color: white; border-color: #cd0277; }
+        .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; width: 100%; margin-bottom: 15px; }
+        .photo-slot { aspect-ratio: 1; border-radius: 6px; border: 1px dashed rgba(200,150,62,0.4); background: rgba(200,150,62,0.04); display: flex; position: relative; overflow: hidden; }
+        .photo-slot img { width: 100%; height: 100%; object-fit: cover; }
+        .remove-btn { position: absolute; top: 4px; right: 4px; width: 22px; height: 22px; border-radius: 50%; background: rgba(180,0,0,0.8); border: none; color: #fff; font-size: 11px; cursor: pointer; z-index: 5; display: flex; align-items: center; justify-content: center; }
+        .select-desafio { width: 100%; max-width: 280px; padding: 12px; border-radius: 20px; border: 1px solid #C8963E; font-family: 'Cinzel', serif; margin-bottom: 15px; background: #fff; color: #7A4F0E; font-size: 11px; text-transform: uppercase; outline: none; }
+        .file-input-wrapper { background: #cd0277; color: white; padding: 12px 24px; border-radius: 25px; cursor: pointer; display: inline-block; width: 100%; max-width: 240px; font-weight: bold; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; text-align: center; border: none; box-shadow: 0 4px 10px rgba(205,2,119,0.2); }
+        .file-input-wrapper input { display: none; }
+        .crono-list, .convidados-list, .desafio-queue { width: 100%; display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
+        .crono-item, .convidado-item, .desafio-item { display: flex; align-items: center; gap: 12px; background: #ffffff; border: 1px solid rgba(200,150,62,0.3); border-radius: 8px; padding: 12px 16px; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.02); text-align: left; }
+        .crono-item.done, .convidado-item.presente { background: rgba(0,130,0,0.06); border-color: rgba(0,130,0,0.3); }
+        .crono-check, .conv-check { width: 20px; height: 20px; border-radius: 50%; border: 2px solid rgba(200,150,62,0.6); display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; font-weight: bold; }
+        .crono-item.done .crono-check, .convidado-item.presente .conv-check { background: #008200; border-color: #008200; color: #fff; }
+        .crono-hora { font-size: 12px; color: #C8963E; font-weight: 600; min-width: 45px; }
+        .crono-texto, .conv-nome, .desafio-text { font-family: 'Playfair Display', serif; font-size: 14px; color: #7A4F0E; flex: 1; }
+        .crono-item.done .crono-texto { text-decoration: line-through; color: #aaa; }
+        .crono-add { display: flex; gap: 8px; width: 100%; margin-bottom: 15px; }
+        .crono-input { border: 1px solid rgba(200,150,62,0.4); border-radius: 20px; padding: 10px 16px; flex: 1; background: #ffffff; outline: none; color: #7A4F0E; font-size: 12px; }
+        .crono-hora-input { border: 1px solid rgba(200,150,62,0.4); border-radius: 20px; padding: 10px 12px; width: 80px; background: #ffffff; text-align: center; outline: none; color: #7A4F0E; font-size: 12px; }
+        .action-btn { background: #cd0277; border: none; color: #ffffff; padding: 10px 20px; border-radius: 24px; font-weight: 600; cursor: pointer; }
+        .conv-del { background: none; border: none; color: rgba(180,0,0,0.5); font-size: 16px; cursor: pointer; padding: 0 4px; }
+        .desafio-thumb { width: 40px; height: 40px; border-radius: 4px; object-fit: cover; }
+        .pill { font-size: 12px; color: #7A4F0E; border: 1px solid rgba(200,150,62,0.35); padding: 6px 16px; border-radius: 20px; background: #ffffff; }
+    </style>
+</head>
+<body>
+
+<div id="view-controle">
+    <div id="controls">
+        <div class="mode-nav">
+            <button class="mode-btn active" onclick="switchScreen('telao-manager')">Telão</button>
+            <button class="mode-btn" onclick="switchScreen('fotos')">Fotos Cat</button>
+            <button class="mode-btn" onclick="switchScreen('desafios')">Desafios</button>
+            <button class="mode-btn" onclick="switchScreen('cronograma')">Cronograma</button>
+            <button class="mode-btn" onclick="switchScreen('convidados')">Convidados</button>
+        </div>
+        
+        <div class="freeze-bar">
+            <button id="btn-congelar" class="freeze-btn" onclick="toggleCongelar()">CONGELAR TELÃO: OFF</button>
+        </div>
+        
+        <div id="screen-telao-manager" class="screen active">
+            <h2 class="section-title">Comando do Telão</h2>
+            <p class="section-sub">Selecione o momento atual para disparar a legenda</p>
+            <div class="moment-btns">
+                <button class="moment-btn" onclick="setMomento('ENTRADA DA CATARINA')">Entrada da Catarina</button>
+                <button class="moment-btn" onclick="setMomento('TROCA DE SAPATO')">Troca de Sapato</button>
+                <button class="moment-btn" onclick="setMomento('VALSA')">Valsa</button>
+                <button class="moment-btn" onclick="setMomento('AGRADECIMENTOS ESPECIAIS')">Agradecimentos Especiais</button>
+                <button class="moment-btn" onclick="setMomento('PARABÉNS')">Parabéns</button>
+                <button class="moment-btn" onclick="setMomento('ABERTURA DA PISTA DE DANÇA')">Abertura da Pista</button>
+                <button class="moment-btn" onclick="setMomento('SLIDESHOW DA CATARINA')">Slideshow da Catarina</button>
+            </div>
+        </div>
+        <!-- Aba 2: Fotos de Crescimento (Slideshow) -->
+        <div id="screen-fotos" class="screen">
+            <h2 class="section-title">Fotos de Crescimento</h2>
+            <p class="section-sub">Suba as fotos previamente para o carrossel do jantar</p>
+            <div class="photo-grid" id="grid-fotos-cat"></div>
+            <label class="file-input-wrapper" style="background: #C8963E;">
+                + Enviar Nova Foto
+                <input type="file" accept="image/*" onchange="uploadFotoCat(this)">
+            </label>
+        </div>
+
+        <!-- Aba 3: Disparador de Desafios em Tempo Real -->
+        <div id="screen-desafios" class="screen">
+            <h2 class="section-title">Lançar Desafio</h2>
+            <p class="section-sub">Selecione o desafio, tire a foto e mande pro telão</p>
+            <select class="select-desafio" id="admin-escolha-desafio">
+                <option value="Foto com a Debutante">Foto com a Debutante</option>
+                <option value="Foto na Mesa de Doces">Foto na Mesa de Doces</option>
+                <option value="Careta na Pista de Dança">Careta na Pista de Dança</option>
+            </select>
+            <label class="file-input-wrapper">
+                📸 Fotografar e Enviar
+                <input type="file" accept="image/*" capture="environment" onchange="uploadFotoDesafioAdmin(this)">
+            </label>
+            <p id="admin-upload-status" style="margin-top:15px; font-family:'Playfair Display'; font-style:italic; color:#9B6B1A;"></p>
+            <div class="desafio-queue" id="lista-desafios-stream" style="margin-top:20px;"></div>
+        </div>
+        
+        <!-- Aba 4: Cronograma de Horários -->
+        <div id="screen-cronograma" class="screen">
+            <h2 class="section-title">Cronograma</h2>
+            <div class="crono-list" id="cronograma-lista"></div>
+            <div class="crono-add">
+                <input type="text" id="crono-novo-horario" class="crono-hora-input" placeholder="22:30">
+                <input type="text" id="crono-novo-texto" class="crono-input" placeholder="Novo momento...">
+                <button class="action-btn" onclick="adicionarCronograma()">+</button>
+            </div>
+        </div>
+        
+        <!-- Aba 5: Portaria / Lista de Convidados -->
+        <div id="screen-convidados" class="screen">
+            <h2 class="section-title">Portaria</h2>
+            <div class="convidados-list" id="convidados-lista"></div>
+            <div class="crono-add">
+                <input type="text" id="conv-novo-nome" class="crono-input" placeholder="Nome do Convidado...">
+                <button class="action-btn" onclick="adicionarConvidado()">+</button>
+            </div>
+            <div class="pill" id="conv-contador">Presentes: 0</div>
+        </div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
