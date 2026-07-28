@@ -1,5 +1,5 @@
 const SUPABASE_URL = 'https://supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhycXFyaXliY3BtbnNpbnN3eW9wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyMDg0NDgsImV4cCI6MjEwMDc4NDQ0OH0.XVwD1ItWJQ8HU6Ib_1NNVrEGcQF1g_1tbgqq5ufQ9xk';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhycXFyaXliY3BtbnNpbnN3eW9wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2NDE0MTEsImV4cCI6MjA2OTIxOTQxMX0.IasE0zT3L58GAnE0S8rRThf4hC1Lz8S9jF1R8vX9zWk';
 const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
 let congelado = false;
@@ -295,5 +295,4 @@ function ouvirFotosDosConvidados() {
   }).subscribe();
 }
 
-// Dispara a leitura inteligente assim que a página termina de abrir
 window.onload = inicializarSistemaPorPagina;
