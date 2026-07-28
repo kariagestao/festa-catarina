@@ -6,6 +6,8 @@ let modoAtual = 'telao';
 let congelado = false;
 let fotosCatAtuais = [];
 let slideIndex = 0;
+let momentoGlobal = 'Recepção';
+let intervaloSlide = null;
 
 function inicializarRoteamento() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -40,7 +42,9 @@ async function toggleCongelar() {
 async function setMomento(nome) {
     document.querySelectorAll('.moment-btn').forEach(b => b.classList.remove('active'));
     if (event && event.currentTarget) event.currentTarget.classList.add('active');
-    if(supabase && !congelado) await supabase.from('config').upsert({ id: 1, momento_atual: nome });
+    if(supabase && !congelado) {
+        await supabase.from('config').upsert({ id: 1, momento_atual: nome });
+    }
 }
 
 async function uploadFotoCat(input) {
@@ -80,7 +84,6 @@ async function carregarFotosCatControle() {
         }
     }
 }
-
 async function carregarCronograma() {
     const { data } = await supabase.from('cronograma').select('*').order('hora');
     const lista = document.getElementById('cronograma-lista');
@@ -155,28 +158,72 @@ async function uploadFotoConvidado(input) {
     if(error) return status.innerText = "Erro ao enviar. Tente novamente!";
     const { data: urlData } = supabase.storage.from('desafios-festa').getPublicUrl(fileName);
     await supabase.from('fotos_desafios').insert({ url: urlData.publicUrl, desafio: desafio, aprovada: true });
-    status.innerText = "Pronto! Foto enviada com sucesso! 🎉";
+    status.innerText = "Pronto! Sua foto acabou de subir para o telão! 🎉";
 }
 
 async function inicializarTelão() {
     if(!supabase) return;
-    const { data } = await supabase.from('fotos_catarina').select('url');
-    if(data) fotosCatAtuais = data.map(f => f.url);
-    if(fotosCatAtuais.length > 0) document.getElementById('telao-canvas').src = fotosCatAtuais[0];
-    rodarSlideshow();
+    
+    // Puxa o estado inicial do momento salvo no banco
+    const { data: configInit } = await supabase.from('config').select('*').eq('id', 1).single();
+    if(configInit) {
+        congelado = configInit.congelado;
+        atualizarVisualTelao(configInit.momento_atual);
+    }
+
+    // Escuta mudanças de momentos pelo controle do celular
     supabase.channel('config-alteracoes').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'config' }, payload => {
         const config = payload.new;
-        if (config.congelado) return;
-        document.getElementById('telao-subtitulo').innerText = "Momento Atual: " + config.momento_atual;
+        congelado = config.congelado;
+        if (congelado) return;
+        atualizarVisualTelao(config.momento_atual);
     }).subscribe();
+
+    // Escuta novos desafios enviados via QR Code
     supabase.channel('fotos-novas').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'fotos_desafios' }, payload => {
         const novaFoto = payload.new;
-        if(!congelado && novaFoto.aprovada) exibirFotoDestaqueNoTelao(novaFoto.url, novaFoto.desafio);
+        if(!congelado && novaFoto.aprovada) {
+            exibirFotoDestaqueNoTelao(novaFoto.url, novaFoto.desafio);
+        }
     }).subscribe();
 }
 
+async function atualizarVisualTelao(momento) {
+    momentoGlobal = momento;
+    document.getElementById('telao-subtitulo').innerText = "Momento Atual: " + momento;
+    
+    const canvas = document.getElementById('telao-canvas');
+    const textoArte = document.getElementById('telao-arte-texto');
+
+    // Desliga qualquer carrossel ativo antes de mudar
+    clearInterval(intervaloSlide);
+
+    if (momento === 'Só a Arte' || momento === 'Recepção') {
+        // Modo Slideshow ativo
+        textoArte.style.display = 'none';
+        canvas.style.display = 'block';
+        
+        const { data } = await supabase.from('fotos_catarina').select('url');
+        if(data && data.length > 0) {
+            fotosCatAtuais = data.map(f => f.url);
+            canvas.src = fotosCatAtuais[0];
+            slideIndex = 0;
+            rodarSlideshow();
+        } else {
+            canvas.style.display = 'none';
+            textoArte.style.display = 'block';
+            textoArte.innerText = "NENHUMA FOTO DA CAT CARREGADA";
+        }
+    } else {
+        // Modo Mensagem Textual limpa (Conserva a identidade visual rosa)
+        canvas.style.display = 'none';
+        textoArte.style.display = 'block';
+        textoArte.innerText = momento.toUpperCase();
+    }
+}
+
 function rodarSlideshow() {
-    setInterval(() => {
+    intervaloSlide = setInterval(() => {
         if(congelado || fotosCatAtuais.length === 0) return;
         slideIndex = (slideIndex + 1) % fotosCatAtuais.length;
         document.getElementById('telao-canvas').src = fotosCatAtuais[slideIndex];
@@ -184,10 +231,20 @@ function rodarSlideshow() {
 }
 
 function exibirFotoDestaqueNoTelao(url, legenda) {
+    clearInterval(intervaloSlide);
     const canvas = document.getElementById('telao-canvas');
+    const textoArte = document.getElementById('telao-arte-texto');
     const subtitulo = document.getElementById('telao-subtitulo');
-    if(canvas) canvas.src = url;
-    if(subtitulo) subtitulo.innerText = `Desafio Concluído: ${legenda}!`;
+    
+    textoArte.style.display = 'none';
+    canvas.style.display = 'block';
+    canvas.src = url;
+    subtitulo.innerText = `Desafio Concluído: ${legenda}!`;
+
+    // Após 8 segundos, o telão retorna automaticamente ao momento original da festa
+    setTimeout(() => {
+        if (!congelado) atualizarVisualTelao(momentoGlobal);
+    }, 8000);
 }
 
 function ouvirFotosDosConvidados() {
@@ -199,3 +256,4 @@ function ouvirFotosDosConvidados() {
 }
 
 window.onload = inicializarRoteamento;
+
