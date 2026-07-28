@@ -49,7 +49,7 @@ async function setMomento(nome) {
 
 async function uploadFotoCat(input) {
     if (!input.files || input.files.length === 0 || !supabase) return;
-    const file = input.files[0];
+    const file = input.files;
     const fileName = `cat_${Date.now()}_${file.name}`;
     const { data, error } = await supabase.storage.from('festa-cat').upload(fileName, file);
     if (error) return alert('Erro no upload: ' + error.message);
@@ -196,38 +196,40 @@ async function atualizarVisualTelao(momento) {
     clearInterval(intervaloSlide);
 
     if (momento === 'RECEPÇÃO DOS CONVIDADOS') {
-        badge.style.display = 'none';
-        containerMidia.style.display = 'none';
+        if(badge) badge.style.display = 'none';
+        if(containerMidia) containerMidia.style.display = 'none';
         if (arteFundoReal) {
             arteFundoReal.src = "arte-festa.jpg";
             arteFundoReal.style.display = 'block';
         }
     } else if (momento === 'Só a Arte') {
         if (arteFundoReal) arteFundoReal.style.display = 'none';
-        badge.style.display = 'none';
-        containerMidia.style.display = 'block';
+        if(badge) badge.style.display = 'none';
+        if(containerMidia) containerMidia.style.display = 'block';
         
         const { data } = await supabase.from('fotos_catarina').select('url');
         if(data && data.length > 0) {
             fotosCatAtuais = data.map(f => f.url);
-            canvas.src = fotosCatAtuais;
+            if(canvas) canvas.src = fotosCatAtuais[0];
             slideIndex = 0;
             rodarSlideshow();
         } else {
-            containerMidia.style.display = 'none';
+            if(containerMidia) containerMidia.style.display = 'none';
             if (arteFundoReal) {
                 arteFundoReal.src = "arte-festa.jpg";
                 arteFundoReal.style.display = 'block';
             }
         }
     } else {
-        containerMidia.style.display = 'none';
+        if(containerMidia) containerMidia.style.display = 'none';
         if (arteFundoReal) {
             arteFundoReal.src = "arte-festa.jpg";
             arteFundoReal.style.display = 'block';
         }
-        badge.style.display = 'flex';
-        badge.innerText = momento.toUpperCase();
+        if(badge) {
+            badge.style.display = 'flex';
+            badge.innerText = momento.toUpperCase();
+        }
     }
 }
 
@@ -235,7 +237,8 @@ function rodarSlideshow() {
     intervaloSlide = setInterval(() => {
         if(congelado || fotosCatAtuais.length === 0) return;
         slideIndex = (slideIndex + 1) % fotosCatAtuais.length;
-        document.getElementById('telao-canvas').src = fotosCatAtuais[slideIndex];
+        const canvas = document.getElementById('telao-canvas');
+        if(canvas) canvas.src = fotosCatAtuais[slideIndex];
     }, 5000);
 }
 
@@ -247,11 +250,13 @@ function exibirFotoDestaqueNoTelao(url, legenda) {
     const arteFundoReal = document.getElementById('telao-arte-fundo-real');
     
     if (arteFundoReal) arteFundoReal.style.display = 'none';
-    containerMidia.style.display = 'block';
-    canvas.src = url;
+    if(containerMidia) containerMidia.style.display = 'block';
+    if(canvas) canvas.src = url;
     
-    badge.style.display = 'flex';
-    badge.innerText = `DESAFIO CONCLUÍDO: ${legenda.toUpperCase()}!`;
+    if(badge) {
+        badge.style.display = 'flex';
+        badge.innerText = `DESAFIO CONCLUÍDO: ${legenda.toUpperCase()}!`;
+    }
 
     setTimeout(() => {
         if (!congelado) atualizarVisualTelao(momentoGlobal);
@@ -260,10 +265,11 @@ function exibirFotoDestaqueNoTelao(url, legenda) {
 
 function ouvirFotosDosConvidados() {
     const lista = document.getElementById('lista-desafios-stream');
-    supabase.channel('stream-controle').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'festa-cat' }, payload => {
+    supabase.channel('stream-controle').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'fotos_desafios' }, payload => {
         const f = payload.new;
         if(lista) lista.innerHTML = `<div class="desafio-item"><img src="${f.url}" class="desafio-thumb"><div class="desafio-text"><b>${f.desafio}</b> enviado agora!</div></div>` + lista.innerHTML;
     }).subscribe();
 }
 
 window.onload = inicializarRoteamento;
+
