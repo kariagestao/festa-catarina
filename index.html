@@ -12,10 +12,10 @@ body { background:#FDE8EF; min-height:100vh; font-family:Cinzel,serif; color: #7
 .view-mode { display: none; width: 100%; min-height: 100vh; }
 .view-mode.active { display: block; }
 
-/* ================= DESIGN IDENTIDADE VISUAL DO TELÃO (PREENCHIMENTO AUTOMÁTICO PINK) ================= */
+/* ================= DESIGN IDENTIDADE VISUAL DO TELÃO (TOM DE PINK AJUSTADO) ================= */
 #view-telao { 
-    background: #C00060; 
-    background-image: url('https://hrqqriybcpmnsinswyop.supabase.co/storage/v1/object/public/festa-cat/arte-festa.jpg');
+    background: #c3135c; /* Tom exato de pink escuro/magenta da sua arte para sumir com as linhas */
+    background-image: url('https://supabase.co');
     background-size: contain; 
     background-position: center;
     background-repeat: no-repeat;
@@ -31,7 +31,7 @@ body { background:#FDE8EF; min-height:100vh; font-family:Cinzel,serif; color: #7
 }
 #telao-container-midia { display: none; position: absolute; inset: 0; width: 100%; height: 100%; z-index: 3; background: #FDE8EF; }
 #telao-canvas { width: 100%; height: 100%; object-fit: cover; }
-.telao-badge-momento { background: #ffffff; border: 1px solid rgba(200,150,62,0.4); padding: 14px 40px; border-radius: 30px; font-family: Cinzel, serif; font-size: 1.4rem; letter-spacing: 0.15em; color: #C00060; display: flex; align-items: center; gap: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); z-index: 5; text-transform: uppercase; }
+.telao-badge-momento { display: none; background: #ffffff; border: 1px solid rgba(200,150,62,0.4); padding: 14px 40px; border-radius: 30px; font-family: Cinzel, serif; font-size: 1.4rem; letter-spacing: 0.15em; color: #C00060; align-items: center; gap: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); z-index: 5; text-transform: uppercase; }
 .telao-badge-momento::before, .telao-badge-momento::after { content: "✦"; color: #C00060; font-size: 1.1rem; }
 
 /* ================= DESIGN DA TORRE DE COMANDO E COMPONENTES ================= */
@@ -78,7 +78,7 @@ body { background:#FDE8EF; min-height:100vh; font-family:Cinzel,serif; color: #7
     <div id="telao-container-midia">
         <img id="telao-canvas" src="" alt="Slideshow">
     </div>
-    <div class="telao-badge-momento" id="telao-subtitulo">Recepção</div>
+    <div class="telao-badge-momento" id="telao-subtitulo">RECEPÇÃO DOS CONVIDADOS</div>
 </div>
 <!-- ================= MODO 2: PAINEL DE CONTROLE ================= -->
 <div id="view-controle" class="view-mode">
@@ -99,12 +99,13 @@ body { background:#FDE8EF; min-height:100vh; font-family:Cinzel,serif; color: #7
             <h2 class="section-title">Selecione o Momento para Projetar</h2>
             <p class="section-sub">Altere a legenda inferior do telão em tempo real</p>
             <div class="moment-btns">
-                <button class="moment-btn" onclick="setMomento('Entrada')">Entrada</button>
-                <button class="moment-btn" onclick="setMomento('Troca de Sapato')">Troca de Sapato</button>
-                <button class="moment-btn" onclick="setMomento('Valsa')">Valsa</button>
-                <button class="moment-btn" onclick="setMomento('Agradecimentos')">Agradecimentos</button>
-                <button class="moment-btn" onclick="setMomento('Parabens')">Parabéns</button>
-                <button class="moment-btn" onclick="setMomento('Abertura da Pista')">Abertura da Pista</button>
+                <button class="moment-btn" onclick="setMomento('RECEPÇÃO DOS CONVIDADOS')">Recepção dos Convidados</button>
+                <button class="moment-btn" onclick="setMomento('ENTRADA DA CATARINA')">Entrada da Catarina</button>
+                <button class="moment-btn" onclick="setMomento('TROCA DE SAPATO')">Troca de Sapato</button>
+                <button class="moment-btn" onclick="setMomento('VALSA')">Valsa</button>
+                <button class="moment-btn" onclick="setMomento('AGRADECIMENTOS ESPECIAIS')">Agradecimentos Especiais</button>
+                <button class="moment-btn" onclick="setMomento('PARABÉNS')">Parabéns</button>
+                <button class="moment-btn" onclick="setMomento('ABERTURA DA PISTA DE DANÇA')">Abertura da Pista</button>
                 <button class="moment-btn" onclick="setMomento('Só a Arte')">Só a Arte</button>
             </div>
         </div>

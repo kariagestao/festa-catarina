@@ -6,7 +6,7 @@ let modoAtual = 'telao';
 let congelado = false;
 let fotosCatAtuais = [];
 let slideIndex = 0;
-let momentoGlobal = 'Recepção';
+let momentoGlobal = 'RECEPÇÃO DOS CONVIDADOS';
 let intervaloSlide = null;
 
 function inicializarRoteamento() {
@@ -49,7 +49,7 @@ async function setMomento(nome) {
 
 async function uploadFotoCat(input) {
     if (!input.files || input.files.length === 0 || !supabase) return;
-    const file = input.files[0];
+    const file = input.files;
     const fileName = `cat_${Date.now()}_${file.name}`;
     const { data, error } = await supabase.storage.from('festa-cat').upload(fileName, file);
     if (error) return alert('Erro no upload: ' + error.message);
@@ -151,7 +151,7 @@ async function uploadFotoConvidado(input) {
     if (!input.files || input.files.length === 0 || !supabase) return;
     const status = document.getElementById('upload-status');
     status.innerText = "Enviando foto para o telão... ⏳";
-    const file = input.files[0];
+    const file = input.files;
     const desafio = document.getElementById('guest-escolha-desafio').value;
     const fileName = `guest_${Date.now()}_${file.name}`;
     const { data, error } = await supabase.storage.from('desafios-festa').upload(fileName, file);
@@ -187,17 +187,20 @@ async function inicializarTelão() {
 
 async function atualizarVisualTelao(momento) {
     momentoGlobal = momento;
-    document.getElementById('telao-subtitulo').innerText = momento;
     
+    const badge = document.getElementById('telao-subtitulo');
     const canvas = document.getElementById('telao-canvas');
     const containerMidia = document.getElementById('telao-container-midia');
-    const arteEstatica = document.getElementById('telao-arte-estatica');
 
     clearInterval(intervaloSlide);
 
-    if (momento === 'Só a Arte') {
-        // Liga o slideshow de fotos e esconde a arte do texto central
-        arteEstatica.style.display = 'none';
+    // Oculta a plaquinha branca na recepção inicial
+    if (momento === 'RECEPÇÃO DOS CONVIDADOS') {
+        badge.style.display = 'none';
+        containerMidia.style.display = 'none';
+    } else if (momento === 'Só a Arte') {
+        // Modo Carrossel/Slideshow ativado em tela cheia
+        badge.style.display = 'none';
         containerMidia.style.display = 'block';
         
         const { data } = await supabase.from('fotos_catarina').select('url');
@@ -208,12 +211,12 @@ async function atualizarVisualTelao(momento) {
             rodarSlideshow();
         } else {
             containerMidia.style.display = 'none';
-            arteEstatica.style.display = 'flex';
         }
     } else {
-        // Conserva a arte estática do fundo em tela cheia e muda a legenda inferior
+        // Exibe a arte de fundo limpa + a plaquinha com a legenda em CAIXA ALTA
         containerMidia.style.display = 'none';
-        arteEstatica.style.display = 'flex';
+        badge.style.display = 'flex';
+        badge.innerText = momento.toUpperCase();
     }
 }
 
@@ -229,13 +232,13 @@ function exibirFotoDestaqueNoTelao(url, legenda) {
     clearInterval(intervaloSlide);
     const canvas = document.getElementById('telao-canvas');
     const containerMidia = document.getElementById('telao-container-midia');
-    const arteEstatica = document.getElementById('telao-arte-estatica');
-    const subtitulo = document.getElementById('telao-subtitulo');
+    const badge = document.getElementById('telao-subtitulo');
     
-    arteEstatica.style.display = 'none';
     containerMidia.style.display = 'block';
     canvas.src = url;
-    subtitulo.innerText = `Desafio Concluído: ${legenda}!`;
+    
+    badge.style.display = 'flex';
+    badge.innerText = `DESAFIO CONCLUÍDO: ${legenda.toUpperCase()}!`;
 
     setTimeout(() => {
         if (!congelado) atualizarVisualTelao(momentoGlobal);
