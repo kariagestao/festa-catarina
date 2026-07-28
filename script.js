@@ -164,14 +164,12 @@ async function uploadFotoConvidado(input) {
 async function inicializarTelão() {
     if(!supabase) return;
     
-    // Puxa o estado inicial do momento salvo no banco
     const { data: configInit } = await supabase.from('config').select('*').eq('id', 1).single();
     if(configInit) {
         congelado = configInit.congelado;
         atualizarVisualTelao(configInit.momento_atual);
     }
 
-    // Escuta mudanças de momentos pelo controle do celular
     supabase.channel('config-alteracoes').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'config' }, payload => {
         const config = payload.new;
         congelado = config.congelado;
@@ -179,7 +177,6 @@ async function inicializarTelão() {
         atualizarVisualTelao(config.momento_atual);
     }).subscribe();
 
-    // Escuta novos desafios enviados via QR Code
     supabase.channel('fotos-novas').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'fotos_desafios' }, payload => {
         const novaFoto = payload.new;
         if(!congelado && novaFoto.aprovada) {
@@ -190,18 +187,18 @@ async function inicializarTelão() {
 
 async function atualizarVisualTelao(momento) {
     momentoGlobal = momento;
-    document.getElementById('telao-subtitulo').innerText = "Momento Atual: " + momento;
+    document.getElementById('telao-subtitulo').innerText = momento;
     
     const canvas = document.getElementById('telao-canvas');
-    const textoArte = document.getElementById('telao-arte-texto');
+    const containerMidia = document.getElementById('telao-container-midia');
+    const arteEstatica = document.getElementById('telao-arte-estatica');
 
-    // Desliga qualquer carrossel ativo antes de mudar
     clearInterval(intervaloSlide);
 
-    if (momento === 'Só a Arte' || momento === 'Recepção') {
-        // Modo Slideshow ativo
-        textoArte.style.display = 'none';
-        canvas.style.display = 'block';
+    if (momento === 'Só a Arte') {
+        // Liga o slideshow de fotos e esconde a arte do texto central
+        arteEstatica.style.display = 'none';
+        containerMidia.style.display = 'block';
         
         const { data } = await supabase.from('fotos_catarina').select('url');
         if(data && data.length > 0) {
@@ -210,15 +207,13 @@ async function atualizarVisualTelao(momento) {
             slideIndex = 0;
             rodarSlideshow();
         } else {
-            canvas.style.display = 'none';
-            textoArte.style.display = 'block';
-            textoArte.innerText = "NENHUMA FOTO DA CAT CARREGADA";
+            containerMidia.style.display = 'none';
+            arteEstatica.style.display = 'flex';
         }
     } else {
-        // Modo Mensagem Textual limpa (Conserva a identidade visual rosa)
-        canvas.style.display = 'none';
-        textoArte.style.display = 'block';
-        textoArte.innerText = momento.toUpperCase();
+        // Conserva a arte estática do fundo em tela cheia e muda a legenda inferior
+        containerMidia.style.display = 'none';
+        arteEstatica.style.display = 'flex';
     }
 }
 
@@ -233,15 +228,15 @@ function rodarSlideshow() {
 function exibirFotoDestaqueNoTelao(url, legenda) {
     clearInterval(intervaloSlide);
     const canvas = document.getElementById('telao-canvas');
-    const textoArte = document.getElementById('telao-arte-texto');
+    const containerMidia = document.getElementById('telao-container-midia');
+    const arteEstatica = document.getElementById('telao-arte-estatica');
     const subtitulo = document.getElementById('telao-subtitulo');
     
-    textoArte.style.display = 'none';
-    canvas.style.display = 'block';
+    arteEstatica.style.display = 'none';
+    containerMidia.style.display = 'block';
     canvas.src = url;
     subtitulo.innerText = `Desafio Concluído: ${legenda}!`;
 
-    // Após 8 segundos, o telão retorna automaticamente ao momento original da festa
     setTimeout(() => {
         if (!congelado) atualizarVisualTelao(momentoGlobal);
     }, 8000);
@@ -256,4 +251,3 @@ function ouvirFotosDosConvidados() {
 }
 
 window.onload = inicializarRoteamento;
-

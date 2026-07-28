@@ -14,36 +14,132 @@ body { background:#FDE8EF; min-height:100vh; font-family:Cinzel,serif; color: #7
 .view-mode { display: none; width: 100%; min-height: 100vh; }
 .view-mode.active { display: block; }
 
-/* DESIGN IDENTIDADE VISUAL (SISTEMA INTEGRADO) */
-#controls, .telao-container { display:flex; flex-direction:column; align-items:center; padding:24px; min-height:100vh; text-align: center; }
+/* ================= DESIGN IDENTIDADE VISUAL DO TELÃO (TELA CHEIA ORIGINAL) ================= */
+#view-telao { 
+    background: #FDE8EF; 
+    width: 100vw; 
+    height: 100vh; 
+    overflow: hidden; 
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6vh 0 8vh 0;
+}
+
+/* Elementos Estáticos da Arte da Festa */
+.telao-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    width: 100%;
+    z-index: 2;
+}
+.telao-main-title { 
+    font-size: 5.5rem; 
+    color: #000000; 
+    font-weight: 400; 
+    letter-spacing: 0.02em;
+    margin-bottom: 2vh;
+}
+.telao-age-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.telao-number {
+    font-size: 14rem;
+    font-weight: 700;
+    line-height: 0.8;
+    background: linear-gradient(135deg, #C8963E 0%, #9B6B1A 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.telao-years {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 4.5rem;
+    background: linear-gradient(135deg, #C8963E 0%, #9B6B1A 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-top: 1vh;
+}
+
+/* Container de Mídia Dinâmico (Slideshow / Desafios) */
+#telao-container-midia {
+    display: none;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 3;
+    background: #FDE8EF;
+}
+#telao-canvas {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Barra de Legenda Dinâmica Inferior (Igual à Foto) */
+.telao-badge-momento {
+    background: #ffffff;
+    border: 1px solid rgba(200,150,62,0.4);
+    padding: 14px 40px;
+    border-radius: 30px;
+    font-family: Cinzel, serif;
+    font-size: 1.4rem;
+    letter-spacing: 0.15em;
+    color: #C00060;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 4px 20px rgba(155,107,26,0.1);
+    z-index: 5;
+    text-transform: uppercase;
+}
+.telao-badge-momento::before, .telao-badge-momento::after {
+    content: "✦";
+    color: #C00060;
+    font-size: 1.1rem;
+}
+
+/* Sub-botão de Retorno Técnico Oculto */
+.telao-btn-voltar {
+    position: absolute;
+    bottom: 2vh;
+    background: rgba(255,255,255,0.4);
+    border: 1px solid rgba(200,150,62,0.2);
+    color: rgba(155,107,26,0.6);
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 9px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    z-index: 5;
+    pointer-events: none;
+}
+
+/* ================= DESIGN DA TORRE DE COMANDO E COMPONENTES ================= */
+#controls { display:flex; flex-direction:column; align-items:center; padding:24px; min-height:100vh; text-align: center; }
 .mode-nav, .moment-btns { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; justify-content:center; width: 100%; max-width: 800px; }
 .mode-btn, .moment-btn { background:transparent; border:1px solid rgba(200,150,62,0.5); color:#9B6B1A; padding:8px 18px; border-radius:20px; font-family:Cinzel,serif; font-size:11px; cursor:pointer; letter-spacing:0.05em; transition:all 0.3s; text-transform: uppercase; }
 .mode-btn:hover, .mode-btn.active, .moment-btn:hover, .moment-btn.active { background:rgba(200,150,62,0.15); border-color:#C8963E; color:#7A4F0E; box-shadow: 0 2px 8px rgba(200,150,62,0.1); }
-
 .freeze-bar { display:flex; justify-content:center; margin-bottom:20px; width: 100%; }
 .freeze-btn { background:rgba(210,3,119,0.05); border:1px solid rgba(210,3,119,0.3); color:#D20377; padding:8px 24px; border-radius:20px; font-family:Cinzel,serif; font-size:11px; cursor:pointer; letter-spacing:0.08em; transition:all 0.3s; text-transform: uppercase; }
 .freeze-btn:hover, .freeze-btn.frozen { background:rgba(210,3,119,0.15); border-color:#D20377; font-weight: 600; }
-
-/* CENTRO DINÂMICO DO TELÃO E PAINÉIS */
-.display-area { width: 100%; max-width: 750px; margin: 20px auto; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 380px; position: relative; }
 .screen { display:none; flex-direction:column; align-items:center; text-align:center; width:100%; }
 .screen.active { display:flex; }
-
-/* TEXTOS E SEÇÕES */
-.section-title { font-family:Cinzel,serif; font-size:2.2rem; color:#C00060; font-weight:600; margin-bottom:0.4rem; letter-spacing: 0.05em; }
-.section-sub { font-family:'Playfair Display',serif; font-style:italic; font-size:1.1rem; color:#9B6B1A; margin-bottom:1.5rem; }
-
-/* COMPONENTES VISUAIS (FOTOS E ENVIOS) */
-.media-frame { width: 100%; max-width: 500px; aspect-ratio: 4/3; border: 2px solid rgba(200,150,62,0.4); border-radius: 8px; background: rgba(255,255,255,0.3); overflow: hidden; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); position: relative; }
-.media-frame img { width: 100%; height: 100%; object-fit: cover; }
-.art-placeholder { font-family: Cinzel, serif; font-size: 1.5rem; color: #9B6B1A; letter-spacing: 0.1em; }
-
+.section-title { font-family:Cinzel,serif; font-size:1.6rem; color:#C00060; font-weight:600; margin-bottom:0.4rem; letter-spacing: 0.05em; }
+.section-sub { font-family:'Playfair Display',serif; font-style:italic; font-size:1rem; color:#9B6B1A; margin-bottom:1.5rem; }
 .photo-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); gap:8px; width:100%; max-width:680px; }
 .photo-slot { aspect-ratio:1; border-radius:4px; border:1px dashed rgba(200,150,62,0.4); background:rgba(200,150,62,0.04); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; color:#9B6B1A; font-family:Cinzel,serif; font-size:10px; cursor:pointer; transition:all 0.3s; position:relative; overflow:hidden; }
 .photo-slot img { width:100%; height:100%; object-fit:cover; position:absolute; inset:0; }
 .remove-btn { position:absolute; top:4px; right:4px; width:20px; height:20px; border-radius:50%; background:rgba(180,0,0,0.8); border:none; color:#fff; font-size:10px; cursor:pointer; z-index:5; }
-
-/* LISTAS INTERATIVAS */
 .crono-list, .convidados-list, .desafio-queue { width:100%; max-width:680px; display:flex; flex-direction:column; gap:6px; margin-bottom: 12px; }
 .crono-item, .convidado-item, .desafio-item { display:flex; align-items:center; gap:12px; background:rgba(255,255,255,0.4); border:1px solid rgba(200,150,62,0.25); border-radius:8px; padding:12px 16px; cursor:pointer; transition: 0.2s; }
 .crono-item.done, .convidado-item.presente { background:rgba(0,120,0,0.05); border-color:rgba(0,120,0,0.2); }
@@ -58,8 +154,6 @@ body { background:#FDE8EF; min-height:100vh; font-family:Cinzel,serif; color: #7
 .action-btn { background:rgba(192,0,96,0.05); border:1px solid rgba(192,0,96,0.3); color:#C00060; padding:8px 22px; border-radius:24px; font-family:Cinzel,serif; font-size:11px; cursor:pointer; font-weight: 600; }
 .conv-del { background:none; border:none; color:rgba(180,0,0,0.5); font-size:14px; cursor:pointer; padding: 0 4px; }
 .desafio-thumb { width:46px; height:46px; border-radius:4px; object-fit:cover; border:1px solid rgba(200,150,62,0.3); }
-
-/* INTERFACE DO CONVIDADO (QR CODE) */
 .guest-container { padding: 30px 20px; text-align: center; max-width: 480px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; }
 .select-desafio { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #C8963E; font-family: Cinzel, serif; margin-bottom: 15px; background: #fff; color: #7A4F0E; outline: none; }
 .file-input-wrapper { background: #C00060; color: white; padding: 12px 24px; border-radius: 25px; cursor: pointer; display: inline-block; width: 100%; max-width: 280px; font-weight: bold; margin-top: 10px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; border: none; text-align: center; }
@@ -68,28 +162,31 @@ body { background:#FDE8EF; min-height:100vh; font-family:Cinzel,serif; color: #7
 </style>
 </head>
 <body>
-
-<!-- ================= MODO 1: TELÃO OFICIAL (PRESERVA A IDENTIDADE ROSA) ================= -->
+<!-- ================= MODO 1: CONTEÚDO VISUAL ESTRUTURAL DO TELÃO ================= -->
 <div id="view-telao" class="view-mode">
-    <div class="telao-container">
-        <!-- Títulos e Identidade Sempre Visíveis -->
-        <h1 class="section-title" id="telao-titulo-principal" style="font-size: 3.5rem; margin-top: 20px;">15 Anos de Catarina</h1>
-        <p class="section-sub" id="telao-subtitulo" style="font-size: 1.5rem;">Momento Atual: Recepção</p>
-        
-        <!-- Área Dinâmica Central (Projeta Artes, Slides ou Desafios) -->
-        <div class="display-area">
-            <div id="telao-frame-midia" class="media-frame">
-                <!-- Inicia exibindo o texto do momento visual -->
-                <div id="telao-arte-texto" class="art-placeholder">RECEPÇÃO</div>
-                <img id="telao-canvas" src="" alt="Slideshow" style="display: none;">
-            </div>
+    <!-- Bloco Dinâmico para Slideshow de Fotos ou Desafios -->
+    <div id="telao-container-midia">
+        <img id="telao-canvas" src="" alt="Slideshow">
+    </div>
+
+    <!-- Arte Clássica do Layout Principal (Visível nos Momentos de Texto) -->
+    <div class="telao-brand" id="telao-arte-estatica">
+        <h1 class="telao-main-title">Catarina</h1>
+        <div class="telao-age-box">
+            <span class="telao-number">15</span>
+            <span class="telao-years">anos</span>
         </div>
     </div>
+
+    <!-- Legenda Dinâmica Inferior (Igualzinha à Imagem de Referência) -->
+    <div class="telao-badge-momento" id="telao-subtitulo">Recepção</div>
+    
+    <div class="telao-btn-voltar">Toque para voltar aos controles</div>
 </div>
+
 <!-- ================= MODO 2: PAINEL DE CONTROLE (SUA TORRE DE COMANDO) ================= -->
 <div id="view-controle" class="view-mode">
     <div id="controls">
-        <!-- Navegação Principal do Controle -->
         <div class="mode-nav">
             <button class="mode-btn active" onclick="switchScreen('telao-manager')">Telão</button>
             <button class="mode-btn" onclick="switchScreen('fotos')">Fotos Cat</button>
@@ -102,16 +199,16 @@ body { background:#FDE8EF; min-height:100vh; font-family:Cinzel,serif; color: #7
             <button id="btn-congelar" class="freeze-btn" onclick="toggleCongelar()">Congelar Telão: OFF</button>
         </div>
 
-        <!-- ABA: SELEÇÃO DE MOMENTOS DO TELÃO -->
+        <!-- ABA: SELEÇÃO DE MOMENTOS -->
         <div id="screen-telao-manager" class="screen active">
-            <h2 class="section-title" style="font-size: 1.4rem;">Selecione o Momento para Projetar</h2>
-            <p class="section-sub" style="font-size: 0.9rem;">Muda a identidade visual e o conteúdo do telão instantaneamente</p>
+            <h2 class="section-title">Selecione o Momento para Projetar</h2>
+            <p class="section-sub">Altere a legenda inferior do telão em tempo real</p>
             <div class="moment-btns">
                 <button class="moment-btn" onclick="setMomento('Entrada')">Entrada</button>
                 <button class="moment-btn" onclick="setMomento('Troca de Sapato')">Troca de Sapato</button>
                 <button class="moment-btn" onclick="setMomento('Valsa')">Valsa</button>
                 <button class="moment-btn" onclick="setMomento('Agradecimentos')">Agradecimentos</button>
-                <button class="moment-btn" onclick="setMomento('Parabéns')">Parabéns</button>
+                <button class="moment-btn" onclick="setMomento('Parabens')">Parabéns</button>
                 <button class="moment-btn" onclick="setMomento('Abertura da Pista')">Abertura da Pista</button>
                 <button class="moment-btn" onclick="setMomento('Só a Arte')">Só a Arte</button>
             </div>
@@ -119,8 +216,8 @@ body { background:#FDE8EF; min-height:100vh; font-family:Cinzel,serif; color: #7
 
         <!-- ABA: CONTROLE DE FOTOS DA CATARINA -->
         <div id="screen-fotos" class="screen">
-            <h2 class="section-title" style="font-size: 1.4rem;">Fotos de Crescimento</h2>
-            <p class="section-sub" style="font-size: 0.9rem;">Essas fotos rodam quando o momento "Só a Arte" ou "Recepção" estiver ativo</p>
+            <h2 class="section-title">Fotos de Crescimento</h2>
+            <p class="section-sub">Essas fotos rodam quando o momento "Só a Arte" estiver selecionado</p>
             <div class="photo-grid" id="grid-fotos-cat"></div>
             <label class="file-input-wrapper" style="max-width:200px; font-size:11px; background: #C8963E;">
                 + Enviar Nova Foto
@@ -128,27 +225,27 @@ body { background:#FDE8EF; min-height:100vh; font-family:Cinzel,serif; color: #7
             </label>
         </div>
 
-        <!-- ABA: FLUXO DE DESAFIOS EM TEMPO REAL -->
+        <!-- ABA: FLUXO DE DESAFIOS -->
         <div id="screen-desafios" class="screen">
-            <h2 class="section-title" style="font-size: 1.4rem;">Fotos Recebidas via QR Code</h2>
-            <p class="section-sub" style="font-size: 0.9rem;">As últimas fotos enviadas interrompem o telão automaticamente</p>
+            <h2 class="section-title">Fotos dos Desafios</h2>
+            <p class="section-sub">Últimas fotos recebidas dos convidados</p>
             <div class="desafio-queue" id="lista-desafios-stream"></div>
         </div>
 
-        <!-- ABA: CRONOGRAMA INTERATIVO -->
+        <!-- ABA: CRONOGRAMA -->
         <div id="screen-cronograma" class="screen">
-            <h2 class="section-title" style="font-size: 1.4rem;">Cronograma da Festa</h2>
+            <h2 class="section-title">Cronograma da Festa</h2>
             <div class="crono-list" id="cronograma-lista"></div>
             <div class="crono-add">
                 <input type="text" class="crono-hora-input" id="crono-novo-horario" placeholder="22:30">
-                <input type="text" class="crono-input" id="crono-novo-texto" placeholder="Momento da festa...">
+                <input type="text" class="crono-input" id="crono-novo-texto" placeholder="Momento...">
                 <button class="action-btn" onclick="adicionarCronograma()">+</button>
             </div>
         </div>
 
-        <!-- ABA: CONTROLE DE PRESENÇA -->
+        <!-- ABA: CONVIDADOS -->
         <div id="screen-convidados" class="screen">
-            <h2 class="section-title" style="font-size: 1.4rem;">Lista de Convidados</h2>
+            <h2 class="section-title">Lista de Convidados</h2>
             <div class="convidados-list" id="convidados-lista"></div>
             <div class="crono-add">
                 <input type="text" class="crono-input" id="conv-novo-nome" placeholder="Nome do Convidado...">
@@ -163,7 +260,7 @@ body { background:#FDE8EF; min-height:100vh; font-family:Cinzel,serif; color: #7
 <div id="view-convidado" class="view-mode">
     <div class="guest-container">
         <h2 class="section-title" style="font-size:2rem; margin-top: 20px;">15 Anos de Catarina</h2>
-        <p class="section-sub">Compartilhe suas memórias na tela da festa!</p>
+        <p class="section-sub">Compartilhe suas memórias!</p>
         
         <select class="select-desafio" id="guest-escolha-desafio">
             <option value="Memória Livre">Foto Livre (Memória da Festa)</option>
@@ -180,7 +277,6 @@ body { background:#FDE8EF; min-height:100vh; font-family:Cinzel,serif; color: #7
     </div>
 </div>
 
-<!-- SCRIPT DE INTELIGÊNCIA EXTERNO -->
 <script src="script.js"></script>
 </body>
 </html>
