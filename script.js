@@ -8,17 +8,20 @@ let slideIndex = 0;
 let momentoGlobal = 'RECEPÇÃO DOS CONVIDADOS';
 let intervaloSlide = null;
 
-// Função inteligente que detecta qual arquivo HTML está aberto
+// DETECTOR DE PÁGINAS SEGURO (Procura os elementos reais de cada tela)
 function inicializarSistemaPorPagina() {
-  const paginaAtual = window.location.pathname.split("/").pop();
+  const testePainelControle = document.getElementById('grid-fotos-cat');
+  const testeMuralConvidado = document.getElementById('mural-lista-fotos');
   
-  if (paginaAtual === "controle.html") {
+  if (testePainelControle) {
+    console.log("Modo Controle ativado.");
     carregarDadosControle();
-  } else if (paginaAtual === "convidado.html") {
+  } else if (testeMuralConvidado) {
+    console.log("Modo Convidado ativado.");
     carregarFotosMural();
     ouvirNovasFotosMural();
   } else {
-    // Se for index.html ou a raiz do link, inicializa o Telão
+    console.log("Modo Telão ativado.");
     inicializarTelão();
   }
 }
@@ -28,8 +31,9 @@ function switchScreen(screenName) {
   document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
   const targetScreen = document.getElementById('screen-' + screenName);
   if (targetScreen) targetScreen.classList.add('active');
-  if (event && event.currentTarget) event.currentTarget.classList.add('active');
+  if (window.event && window.event.currentTarget) window.event.currentTarget.classList.add('active');
 }
+
 async function toggleCongelar() {
   congelado = !congelado;
   const btn = document.getElementById('btn-congelar');
@@ -48,7 +52,6 @@ async function setMomento(nome) {
 
 async function inicializarTelão() {
   if(!supabase) return;
-  
   const { data: configInit } = await supabase.from('config').select('*').eq('id', 1).single();
   if(configInit) {
     congelado = configInit.congelado;
@@ -148,30 +151,30 @@ async function uploadFotoCat(input) {
 async function uploadFotoDesafioAdmin(input) {
   if (!input.files || input.files.length === 0 || !supabase) return;
   const status = document.getElementById('admin-upload-status');
-  status.innerText = "Enviando desafio para o telão... ";
+  if(status) status.innerText = "Enviando desafio para o telão... ";
   const file = input.files[0];
   const desafio = document.getElementById('admin-escolha-desafio').value;
   const fileName = `admin_desafio_${Date.now()}_${file.name}`;
   const { data, error } = await supabase.storage.from('desafios-festa').upload(fileName, file);
-  if(error) return status.innerText = "Erro ao enviar. Tente novamente!";
+  if(error) { if(status) status.innerText = "Erro ao enviar. Tente novamente!"; return; }
   const { data: urlData } = supabase.storage.from('desafios-festa').getPublicUrl(fileName);
   await supabase.from('fotos_desafios').insert({ url: urlData.publicUrl, desafio: desafio, aprovada: true });
-  status.innerText = "Desafio enviado com sucesso para o telão!";
-  setTimeout(() => { status.innerText = ""; }, 3000);
+  if(status) status.innerText = "Desafio enviado com sucesso para o telão!";
+  setTimeout(() => { if(status) status.innerText = ""; }, 3000);
 }
 
 async function uploadFotoMuralConvidado(input) {
   if (!input.files || input.files.length === 0 || !supabase) return;
   const status = document.getElementById('upload-status');
-  status.innerText = "Publicando no mural... ";
+  if(status) status.innerText = "Publicando no mural... ";
   const file = input.files[0];
   const fileName = `guest_mural_${Date.now()}_${file.name}`;
   const { data, error } = await supabase.storage.from('desafios-festa').upload(fileName, file);
-  if(error) return status.innerText = "Erro ao publicar. Tente novamente!";
+  if(error) { if(status) status.innerText = "Erro ao publicar. Tente novamente!"; return; }
   const { data: urlData } = supabase.storage.from('desafios-festa').getPublicUrl(fileName);
   await supabase.from('memorias').insert({ url: urlData.publicUrl });
-  status.innerText = "Sua foto foi para o Mural de Memórias! ✨";
-  setTimeout(() => { status.innerText = ""; }, 3000);
+  if(status) status.innerText = "Sua foto foi para o Mural de Memórias! ✨";
+  setTimeout(() => { if(status) status.innerText = ""; }, 3000);
 }
 
 async function carregarFotosMural() {
@@ -187,6 +190,7 @@ async function carregarFotosMural() {
 }
 
 function ouvirNovasFotosMural() {
+  if(!supabase) return;
   supabase.channel('mural-stream').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'memorias' }, payload => {
     const post = payload.new;
     const lista = document.getElementById('mural-lista-fotos');
@@ -282,6 +286,7 @@ async function deletarConvidado(id) {
 
 function ouvirFotosDosConvidados() {
   const lista = document.getElementById('lista-desafios-stream');
+  if(!supabase) return;
   supabase.channel('stream-controle').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'fotos_desafios' }, payload => {
     const f = payload.new;
     if(lista) {
@@ -290,5 +295,5 @@ function ouvirFotosDosConvidados() {
   }).subscribe();
 }
 
-// Ativa o gatilho inteligente ao carregar a página
+// Dispara a leitura inteligente assim que a página termina de abrir
 window.onload = inicializarSistemaPorPagina;
