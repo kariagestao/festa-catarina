@@ -11,6 +11,7 @@ let slideIndexDesafio = 0;
 let momentoGlobal = 'RECEPÇÃO DOS CONVIDADOS';
 let intervaloSlideCat = null;
 let intervaloSlideDesafio = null;
+let editandoId = null; // Guarda o ID se estivermos editando um item
 
 function inicializarSistemaPorPagina() {
   const testePainelControle = document.getElementById('grid-fotos-cat');
@@ -313,23 +314,27 @@ async function carregarFotosDesafiosControle() {
   } catch(e) { console.error(e); }
 }
 
-// CRONOGRAMA ORDENADO POR HORÁRIO E COM CHECKLIST PERSISTENTE
+// CRONOGRAMA ORDENADO POR HORÁRIO COM BOTÃO DE EDITAR E CHECKLIST
 async function carregarCronograma() {
   if(!client) return;
   try {
-    // Ordena de forma crescente pelo horário (ex: 19:00, 20:30, 22:00)
     const { data } = await client.from('cronograma').select('*').order('hora', { ascending: true });
     const lista = document.getElementById('cronograma-lista');
     if(lista && data) {
       lista.innerHTML = '';
       data.forEach(item => {
         const isDone = item.concluido ? true : false;
+        // Escapa aspas para evitar erro ao passar os dados para a função de editar
+        const tituloSeguro = (item.titulo || '').replace(/'/g, "\\'");
+        const textoSeguro = (item.texto || '').replace(/'/g, "\\'").replace(/\n/g, '\\n');
+        
         lista.innerHTML += `
           <div class="crono-item ${isDone ? 'done' : ''}" style="background:#ffffff; padding:14px 18px; border-radius:16px; border:1px solid rgba(200,150,62,0.3); margin-bottom:10px; box-shadow:0 2px 8px rgba(0,0,0,0.02); transition: all 0.3s;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
               <b style="font-family:'Cinzel'; font-size:1.05rem; color:#cd0277; ${isDone ? 'text-decoration: line-through; opacity: 0.6;' : ''}">${item.hora} - ${item.titulo || 'Momento'}</b>
               <div>
-                <button onclick="toggleCrono('${item.id}', ${isDone})" style="background:${isDone ? '#6c757d' : '#28a745'}; color:white; border:none; padding:6px 12px; border-radius:12px; font-size:12px; cursor:pointer; margin-right:6px; font-weight:600;">${isDone ? 'Desfazer' : '✓ Feito'}</button>
+                <button onclick="toggleCrono('${item.id}', ${isDone})" style="background:${isDone ? '#6c757d' : '#28a745'}; color:white; border:none; padding:6px 10px; border-radius:10px; font-size:11px; cursor:pointer; margin-right:4px; font-weight:600;">${isDone ? 'Desfazer' : '✓ Feito'}</button>
+                <button onclick="prepararEdicao('${item.id}', '${item.hora}', '${tituloSeguro}', '${textoSeguro}')" style="background:#007bff; color:white; border:none; padding:6px 10px; border-radius:10px; font-size:11px; cursor:pointer; margin-right:4px; font-weight:600;">Editar</button>
                 <button onclick="deletarCronograma('${item.id}')" style="background:none; border:none; color:#cd0277; font-size:15px; cursor:pointer; padding:4px;">✕</button>
               </div>
             </div>
@@ -346,17 +351,45 @@ async function adicionarCronograma() {
   const titulo = tituloEl ? tituloEl.value : '';
   const texto = document.getElementById('crono-novo-texto').value;
   if(!hora || !client) return;
-  
-  const { error } = await client.from('cronograma').insert({ hora, titulo, texto, concluido: false });
-  if(error) {
-    alert("Erro ao adicionar no cronograma: " + error.message);
-    return;
+
+  if (editandoId) {
+    // Se estiver editando, atualiza o registro existente
+    const { error } = await client.from('cronograma').update({ hora, titulo, texto }).eq('id', editandoId);
+    if(error) {
+      alert("Erro ao atualizar cronograma: " + error.message);
+      return;
+    }
+    editandoId = null; // Reseta o modo de edição
+    const btnAdicionar = document.querySelector('#cronograma-lista ~ * button, button[onclick="adicionarCronograma()"]');
+    if(btnAdicionar) btnAdicionar.innerText = "Adicionar ao Cronograma";
+  } else {
+    // Se for novo, insere normal
+    const { error } = await client.from('cronograma').insert({ hora, titulo, texto, concluido: false });
+    if(error) {
+      alert("Erro ao adicionar no cronograma: " + error.message);
+      return;
+    }
   }
   
   if(tituloEl) tituloEl.value = '';
   document.getElementById('crono-novo-horario').value = '';
   document.getElementById('crono-novo-texto').value = '';
   carregarCronograma();
+}
+
+function prepararEdicao(id, hora, titulo, texto) {
+  editandoId = id;
+  document.getElementById('crono-novo-horario').value = hora;
+  const tituloEl = document.getElementById('crono-novo-titulo');
+  if(tituloEl) tituloEl.value = titulo !== 'null' ? titulo : '';
+  document.getElementById('crono-novo-texto').value = texto !== 'null' ? texto.replace(/\\n/g, '\n') : '';
+  
+  // Muda o texto do botão principal para indicar que está salvando uma edição
+  const btnAdicionar = document.querySelector('button[onclick="adicionarCronograma()"]');
+  if(btnAdicionar) btnAdicionar.innerText = "Salvar Alterações";
+  
+  // Rola a página suavemente para o formulário de cadastro
+  document.getElementById('crono-novo-horario').scrollIntoView({ behavior: 'smooth' });
 }
 
 async function toggleCrono(id, statusAtual) {
