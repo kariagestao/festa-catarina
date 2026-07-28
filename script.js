@@ -34,22 +34,23 @@ function switchScreen(screenName) {
 
 async function toggleCongelar() {
     congelado = !congelado;
-    document.getElementById('btn-congelar').innerText = congelado ? "Telão: CONGELADO" : "Congelar Telão: OFF";
-    document.getElementById('btn-congelar').classList.toggle('frozen', congelado);
+    const btn = document.getElementById('btn-congelar');
+    if (btn) {
+        btn.innerText = congelado ? "TELÃO: CONGELADO" : "CONGELAR TELÃO: OFF";
+        btn.classList.toggle('frozen', congelado);
+    }
     if(supabase) await supabase.from('config').upsert({ id: 1, congelado: congelado });
 }
 
 async function setMomento(nome) {
-    document.querySelectorAll('.moment-btn').forEach(b => b.classList.remove('active'));
-    if (event && event.currentTarget) event.currentTarget.classList.add('active');
-    if(supabase && !congelado) {
+    if(supabase) {
         await supabase.from('config').upsert({ id: 1, momento_atual: nome });
     }
 }
 
 async function uploadFotoCat(input) {
     if (!input.files || input.files.length === 0 || !supabase) return;
-    const file = input.files;
+    const file = input.files[0];
     const fileName = `cat_${Date.now()}_${file.name}`;
     const { data, error } = await supabase.storage.from('festa-cat').upload(fileName, file);
     if (error) return alert('Erro no upload: ' + error.message);
@@ -173,7 +174,6 @@ async function inicializarTelão() {
     supabase.channel('config-alteracoes').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'config' }, payload => {
         const config = payload.new;
         congelado = config.congelado;
-        if (congelado) return;
         atualizarVisualTelao(config.momento_atual);
     }).subscribe();
 
@@ -210,7 +210,7 @@ async function atualizarVisualTelao(momento) {
         const { data } = await supabase.from('fotos_catarina').select('url');
         if(data && data.length > 0) {
             fotosCatAtuais = data.map(f => f.url);
-            if(canvas) canvas.src = fotosCatAtuais[0];
+            if(canvas) canvas.src = fotosCatAtuais;
             slideIndex = 0;
             rodarSlideshow();
         } else {
@@ -272,4 +272,3 @@ function ouvirFotosDosConvidados() {
 }
 
 window.onload = inicializarRoteamento;
-
