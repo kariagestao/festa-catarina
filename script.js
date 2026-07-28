@@ -60,6 +60,21 @@ async function setMomento(nome) {
   } catch(e) { console.error(e); }
 }
 
+// FUNÇÃO DA HOMENAGEM AOS AVÓS
+async function exibirHomenagemAvos() {
+  if (!client) return;
+  
+  const urlFotoAvos = "https://hrqqriybcpmnsinswyop.supabase.co/storage/v1/object/public/homenagem-avos/WhatsApp%20Image%202026-07-28%20at%2020.36.05.jpeg"; 
+  const textoHomenagem = "Eternamente em nossos corações ❤️";
+
+  try {
+    await client.from('config').upsert({ id: 1, momento_atual: 'HOMENAGEM AOS AVÓS' });
+    exibirFotoDestaqueNoTelao(urlFotoAvos, textoHomenagem);
+  } catch(e) {
+    console.error("Erro ao acionar homenagem:", e);
+  }
+}
+
 async function inicializarTelão() {
   if (!client) return;
   try {
@@ -190,11 +205,8 @@ function exibirFotoDestaqueNoTelao(url, legenda) {
   
   if(badge) {
     badge.style.display = 'flex';
-    badge.innerText = `DESAFIO CONCLUÍDO: ${legenda.toUpperCase()}!`;
+    badge.innerText = `${legenda.toUpperCase()}`;
   }
-  setTimeout(() => {
-    if (!congelado) atualizarVisualTelao(momentoGlobal);
-  }, 8000);
 }
 
 async function uploadFotoCat(input) {
@@ -252,9 +264,9 @@ async function carregarFotosMural() {
       }
       data.forEach(post => {
         lista.innerHTML += `
-          <div class="mural-post" style="background:#ffffff; border-radius:16px; overflow:hidden; border:1px solid rgba(200,150,62,0.3); box-shadow:0 4px 12px rgba(0,0,0,0.04); transition: transform 0.2s;">
-            <img src="${post.url}" style="width:100%; height:280px; object-fit:cover; display:block;">
-            <div style="padding:12px 16px; font-family:'Playfair Display'; font-size:0.85rem; color:#7A4F0E; display:flex; justify-content:space-between; align-items:center;">
+          <div class="mural-post">
+            <img class="mural-photo" src="${post.url}">
+            <div class="mural-footer">
               <span>✨ Memória da Festa</span>
             </div>
           </div>`;
@@ -320,7 +332,6 @@ async function carregarDadosControle() {
   carregarCronograma();
   carregarConvidados();
   
-  // Executa apenas se o container do mural estiver visível na aba atual
   if (document.getElementById('lista-mural-controle')) {
     carregarFotosMuralControle();
   }
