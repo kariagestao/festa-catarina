@@ -319,7 +319,12 @@ async function carregarDadosControle() {
   carregarFotosDesafiosControle();
   carregarCronograma();
   carregarConvidados();
-  carregarFotosMuralControle();
+  
+  // Executa apenas se o container do mural estiver visível na aba atual
+  if (document.getElementById('lista-mural-controle')) {
+    carregarFotosMuralControle();
+  }
+  
   ouvirFotosDosConvidados();
 }
 
