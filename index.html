@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>15 Anos de Catarina - Painel de Controle & Telão</title>
+<link href="https://googleapis.com" rel="stylesheet">
+<script src="https://jsdelivr.net"></script>
+<style>
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:#FDE8EF; min-height:100vh; font-family:Cinzel,serif; }
+.view-mode { display: none; }
+.view-mode.active { display: block; }
+#view-telao { background: #000; width: 100vw; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; position: relative; color: #fff; }
+#telao-canvas { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; transition: opacity 1s ease-in-out; }
+.telao-overlay { position: absolute; bottom: 40px; text-align: center; width: 100%; z-index: 10; text-shadow: 2px 2px 8px rgba(0,0,0,0.8); }
+.telao-title { font-size: 3rem; color: #C8963E; }
+#controls { display:flex; flex-direction:column; align-items:center; padding:16px; min-height:100vh; }
+.mode-nav { display:flex; gap:6px; margin-bottom:10px; flex-wrap:wrap; justify-content:center; }
+.mode-btn { background:transparent; border:1px solid rgba(200,150,62,0.5); color:#9B6B1A; padding:6px 14px; border-radius:20px; font-family:Cinzel,serif; font-size:10px; cursor:pointer; letter-spacing:0.05em; transition:all 0.3s; }
+.mode-btn:hover,.mode-btn.active { background:rgba(200,150,62,0.15); border-color:#C8963E; color:#7A4F0E; }
+.freeze-bar { display:flex; justify-content:center; margin-bottom:12px; }
+.freeze-btn { background:rgba(210,3,119,0.1); border:1px solid rgba(210,3,119,0.4); color:#D20377; padding:6px 20px; border-radius:20px; font-family:Cinzel,serif; font-size:10px; cursor:pointer; letter-spacing:0.08em; transition:all 0.3s; }
+.freeze-btn.frozen { background:#D20377; color:#fff; }
+.screen { display:none; flex-direction:column; align-items:center; text-align:center; width:100%; }
+.screen.active { display:flex; }
+.section-title { font-family:Cinzel,serif; font-size:1.2rem; color:#C00060; font-weight:600; margin-bottom:0.2rem; }
+.section-sub { font-family:'Playfair Display',serif; font-style:italic; font-size:0.82rem; color:#9B6B1A; margin-bottom:0.8rem; }
+.photo-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); gap:8px; width:100%; max-width:680px; }
+.photo-slot { aspect-ratio:1; border-radius:4px; border:1px dashed rgba(200,150,62,0.4); background:rgba(200,150,62,0.04); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; color:#9B6B1A; font-family:Cinzel,serif; font-size:9px; cursor:pointer; transition:all 0.3s; position:relative; overflow:hidden; }
+.photo-slot img { width:100%; height:100%; object-fit:cover; position:absolute; inset:0; border-radius:4px; }
+.pill { font-family:Cinzel,serif; font-size:10px; color:#7A4F0E; letter-spacing:0.08em; margin-top:0.6rem; border:1px solid rgba(200,150,62,0.35); padding:4px 14px; border-radius:20px; background:rgba(200,150,62,0.07); }
+.action-btn { background:rgba(192,0,96,0.08); border:1px solid rgba(192,0,96,0.35); color:#C00060; padding:8px 20px; border-radius:24px; font-family:Cinzel,serif; font-size:10px; cursor:pointer; letter-spacing:0.06em; transition:all 0.3s; }
+.desafio-queue { width:100%; max-width:680px; margin-top:10px; display:flex; flex-direction:column; gap:5px; }
+.desafio-item { display:flex; align-items:center; gap:8px; background:rgba(200,150,62,0.05); border:1px solid rgba(200,150,62,0.2); border-radius:6px; padding:7px 10px; width:100%; }
+.desafio-thumb { width:46px; height:46px; border-radius:4px; object-fit:cover; flex-shrink:0; border:1px solid rgba(200,150,62,0.3); }
+.desafio-text { font-family:'Playfair Display',serif; font-size:11px; color:#7A4F0E; text-align:left; flex:1; }
+.moment-btns { display:flex; gap:6px; flex-wrap:wrap; justify-content:center; margin-top:10px; }
+.moment-btn { background:transparent; border:1px solid rgba(200,150,62,0.4); color:#9B6B1A; padding:8px 16px; border-radius:20px; font-family:Cinzel,serif; font-size:11px; cursor:pointer; transition:all 0.3s; }
+.moment-btn.active { background:#C8963E; color:#fff; }
+.crono-list, .convidados-list { width:100%; max-width:680px; margin-top:10px; display:flex; flex-direction:column; gap:6px; }
+.crono-item, .convidado-item { display:flex; align-items:center; gap:10px; background:rgba(200,150,62,0.05); border:1px solid rgba(200,150,62,0.2); border-radius:8px; padding:10px 14px; cursor:pointer; }
+.crono-item.done, .convidado-item.presente { background:rgba(0,150,0,0.06); border-color:rgba(0,150,0,0.25); }
+.crono-check, .conv-check { width:22px; height:22px; border-radius:50%; border:2px solid rgba(200,150,62,0.5); display:flex; align-items:center; justify-content:center; font-size:12px; color:transparent; }
+.crono-item.done .crono-check, .convidado-item.presente .conv-check { background:#060; border-color:#060; color:#fff; }
+.crono-hora { font-family:Cinzel,serif; font-size:11px; color:#C8963E; font-weight:600; min-width:48px; }
+.crono-texto, .conv-nome { font-family:'Playfair Display',serif; font-size:12px; color:#7A4F0E; text-align:left; flex:1; }
+.crono-item.done .crono-texto { text-decoration:line-through; color:#aaa; }
+.crono-add { display:flex; gap:8px; margin-top:10px; width:100%; max-width:680px; }
+.crono-input { font-family:Cinzel,serif; font-size:11px; border:1px solid rgba(200,150,62,0.4); border-radius:20px; padding:7px 14px; flex:1; background:rgba(200,150,62,0.05); outline:none; }
+.crono-hora-input { font-family:Cinzel,serif; font-size:11px; border:1px solid rgba(200,150,62,0.4); border-radius:20px; padding:7px 10px; width:80px; background:rgba(200,150,62,0.05); text-align:center; }
+.conv-del { background:none; border:none; color:rgba(180,0,0,0.4); font-size:14px; cursor:pointer; }
+.guest-container { padding: 20px; text-align: center; max-width: 480px; margin: 0 auto; }
+.select-desafio { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #C8963E; font-family: Cinzel, serif; margin-bottom: 15px; background: #fff; }
+.file-input-wrapper { background: #C00060; color: white; padding: 12px; border-radius: 25px; cursor: pointer; display: inline-block; width: 100%; font-weight: bold; margin-top: 10px; }
+.file-input-wrapper input { display: none; }
+.remove-btn { position:absolute; top:3px; right:3px; width:20px; height:20px; border-radius:50%; background:rgba(180,0,0,0.75); border:none; color:#fff; font-size:11px; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:5; }
+</style>
+</head>
+<body>
+
+<div id="view-telao" class="view-mode">
+    <img id="telao-canvas" src="" alt="Slideshow">
+    <div class="telao-overlay">
+        <h1 class="telao-title" id="telao-subtitulo">15 Anos de Catarina</h1>
+    </div>
+</div>
+
+<div id="view-controle" class="view-mode">
+    <div id="controls">
+        <div class="mode-nav">
+            <button class="mode-btn active" onclick="switchScreen('fotos')">Fotos Cat</button>
+            <button class="mode-btn" onclick="switchScreen('desafios')">Desafios</button>
+            <button class="mode-btn" onclick="switchScreen('momento')">Momento Festa</button>
+            <button class="mode-btn" onclick="switchScreen('cronograma')">Cronograma</button>
+            <button class="mode-btn" onclick="switchScreen('convidados')">Convidados</button>
+        </div>
+        <div class="freeze-bar">
+            <button id="btn-congelar" class="freeze-btn" onclick="toggleCongelar()">Congelar Telão: OFF</button>
+        </div>
+        <div id="screen-fotos" class="screen active">
+            <h2 class="section-title">Fotos da Catarina</h2>
+            <div class="photo-grid" id="grid-fotos-cat"></div>
+            <label class="file-input-wrapper" style="max-width:200px; font-size:11px;">
+                + Enviar Nova Foto
+                <input type="file" accept="image/*" onchange="uploadFotoCat(this)">
+            </label>
+        </div>
+        <div id="screen-desafios" class="screen">
+            <h2 class="section-title">Fotos dos Desafios</h2>
+            <div class="desafio-queue" id="lista-desafios-stream"></div>
+        </div>
+        <div id="screen-momento" class="screen">
+            <h2 class="section-title">Momento da Festa</h2>
+            <div class="moment-btns">
+                <button class="moment-btn" onclick="setMomento('Recepção')">Recepção</button>
+                <button class="moment-btn" onclick="setMomento('Valsa')">A Hora da Valsa</button>
+                <button class="moment-btn" onclick="setMomento('Balada')">Pista de Dança / Balada</button>
+                <button class="moment-btn" onclick="setMomento('Homenagens')">Homenagens</button>
+            </div>
+        </div>
+        <div id="screen-cronograma" class="screen">
+            <h2 class="section-title">Cronograma</h2>
+            <div class="crono-list" id="cronograma-lista"></div>
+            <div class="crono-add">
+                <input type="text" class="crono-hora-input" id="crono-novo-horario" placeholder="22:00">
+                <input type="text" class="crono-input" id="crono-novo-texto" placeholder="Acontecimento...">
+                <button class="action-btn" onclick="adicionarCronograma()">+</button>
+            </div>
+        </div>
+        <div id="screen-convidados" class="screen">
+            <h2 class="section-title">Lista de Convidados</h2>
+            <div class="convidados-list" id="convidados-lista"></div>
+            <div class="crono-add">
+                <input type="text" class="crono-input" id="conv-novo-nome" placeholder="Nome Completo...">
+                <button class="action-btn" onclick="adicionarConvidado()">+</button>
+            </div>
+        <div class="pill" id="conv-contador">Presentes: 0</div>
+    </div>
+</div>
+
+<div id="view-convidado" class="view-mode">
+    <div class="guest-container">
+        <h2 class="section-title" style="font-size:1.8rem;">15 Anos de Catarina</h2>
+        <p class="section-sub">Compartilhe suas memórias!</p>
+        <select class="select-desafio" id="guest-escolha-desafio">
+            <option value="Memória Livre">Foto Livre (Memória da Festa)</option>
+            <option value="Desafio 1">Desafio: Foto com a Debutante</option>
+            <option value="Desafio 2">Desafio: Foto na Mesa de Doces</option>
+            <option value="Desafio 3">Desafio: Careta na Pista de Dança</option>
+        </select>
+        <label class="file-input-wrapper">
+            📸 Tirar ou Escolher Foto
+            <input type="file" accept="image/*" onchange="uploadFotoConvidado(this)">
+        </label>
+        <p id="upload-status" style="margin-top:15px; color:#9B6B1A;"></p>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
