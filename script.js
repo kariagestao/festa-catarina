@@ -11,7 +11,7 @@ let slideIndexDesafio = 0;
 let momentoGlobal = 'RECEPÇÃO DOS CONVIDADOS';
 let intervaloSlideCat = null;
 let intervaloSlideDesafio = null;
-let editandoId = null; // Guarda o ID se estivermos editando um item
+let editandoId = null;
 
 function inicializarSistemaPorPagina() {
   const testePainelControle = document.getElementById('grid-fotos-cat');
@@ -75,15 +75,6 @@ async function inicializarTelão() {
     congelado = config.congelado;
     atualizarVisualTelao(config.momento_atual);
   }).subscribe();
-
-  client.channel('fotos-novas').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'fotos_desafios' }, payload => {
-    const novaFoto = payload.new;
-    if(!congelado && novaFoto.aprovada) {
-      if (momentoGlobal === 'RECEPÇÃO DOS CONVIDADOS' || (!momentoGlobal.includes('SLIDESHOW'))) {
-        exibirFotoDestaqueNoTelao(novaFoto.url, novaFoto.desafio);
-      }
-    }
-  }).subscribe();
 }
 
 async function atualizarVisualTelao(momento) {
@@ -117,29 +108,6 @@ async function atualizarVisualTelao(momento) {
         if (arteFundoReal) { arteFundoReal.src = "arte-festa.jpg"; arteFundoReal.style.display = 'block'; }
       }
     } catch(e) { console.error(e); }
-  } else if (momento === 'SLIDESHOW DOS DESAFIOS') {
-    if (arteFundoReal) arteFundoReal.style.display = 'none';
-    if(containerMidia) containerMidia.style.display = 'block';
-    
-    try {
-      const { data } = await client.from('fotos_desafios').select('url, desafio').eq('aprovada', true);
-      if(data && data.length > 0) {
-        fotosDesafiosAtuais = data;
-        if(canvas) canvas.src = fotosDesafiosAtuais[0].url;
-        
-        if(badge) {
-          badge.style.display = 'flex';
-          badge.innerText = `DESAFIO: ${fotosDesafiosAtuais[0].desafio.toUpperCase()}`;
-        }
-        
-        slideIndexDesafio = 0;
-        rodarSlideshowDesafios();
-      } else {
-        if(containerMidia) containerMidia.style.display = 'none';
-        if(badge) badge.style.display = 'none';
-        if (arteFundoReal) { arteFundoReal.src = "arte-festa.jpg"; arteFundoReal.style.display = 'block'; }
-      }
-    } catch(e) { console.error(e); }
   } else {
     if(containerMidia) containerMidia.style.display = 'none';
     if (arteFundoReal) { arteFundoReal.src = "arte-festa.jpg"; arteFundoReal.style.display = 'block'; }
@@ -159,44 +127,6 @@ function rodarSlideshowCat() {
   }, 5000);
 }
 
-function rodarSlideshowDesafios() {
-  intervaloSlideDesafio = setInterval(() => {
-    if(congelado || fotosDesafiosAtuais.length === 0) return;
-    slideIndexDesafio = (slideIndexDesafio + 1) % fotosDesafiosAtuais.length;
-    const itemAtual = fotosDesafiosAtuais[slideIndexDesafio];
-    
-    const canvas = document.getElementById('telao-canvas');
-    if(canvas) canvas.src = itemAtual.url;
-
-    const badge = document.getElementById('telao-subtitulo');
-    if(badge && itemAtual.desafio) {
-      badge.style.display = 'flex';
-      badge.innerText = `DESAFIO: ${itemAtual.desafio.toUpperCase()}`;
-    }
-  }, 5000);
-}
-
-function exibirFotoDestaqueNoTelao(url, legenda) {
-  clearInterval(intervaloSlideCat);
-  clearInterval(intervaloSlideDesafio);
-  const canvas = document.getElementById('telao-canvas');
-  const containerMidia = document.getElementById('telao-container-midia');
-  const badge = document.getElementById('telao-subtitulo');
-  const arteFundoReal = document.getElementById('telao-arte-fundo-real');
-  
-  if (arteFundoReal) arteFundoReal.style.display = 'none';
-  if(containerMidia) containerMidia.style.display = 'block';
-  if(canvas) canvas.src = url;
-  
-  if(badge) {
-    badge.style.display = 'flex';
-    badge.innerText = `DESAFIO CONCLUÍDO: ${legenda.toUpperCase()}!`;
-  }
-  setTimeout(() => {
-    if (!congelado) atualizarVisualTelao(momentoGlobal);
-  }, 8000);
-}
-
 async function uploadFotoCat(input) {
   if (!input.files || input.files.length === 0 || !client) return;
   const file = input.files[0];
@@ -211,33 +141,36 @@ async function uploadFotoCat(input) {
 async function uploadFotoDesafioAdmin(input) {
   if (!input.files || input.files.length === 0 || !client) return;
   const status = document.getElementById('admin-upload-status');
-  if(status) status.innerText = "Enviando desafio para o telão... ";
+  if(status) status.innerText = "Enviando desafio... ";
   const file = input.files[0];
   const desafio = document.getElementById('admin-escolha-desafio').value;
   const fileName = `admin_desafio_${Date.now()}_${file.name}`;
   const { error } = await client.storage.from('desafios-festa').upload(fileName, file);
-  if(error) { if(status) status.innerText = "Erro ao enviar. Tente novamente!"; return; }
+  if(error) { if(status) status.innerText = "Erro ao enviar."; return; }
   const { data: urlData } = client.storage.from('desafios-festa').getPublicUrl(fileName);
   await client.from('fotos_desafios').insert({ url: urlData.publicUrl, desafio: desafio, aprovada: true });
-  if(status) status.innerText = "Desafio enviado com sucesso para o telão!";
+  if(status) status.innerText = "Enviado com sucesso!";
   setTimeout(() => { if(status) status.innerText = ""; }, 3000);
   carregarFotosDesafiosControle();
 }
 
+// UPLOAD DO MURAL PELO CONVIDADO
 async function uploadFotoMuralConvidado(input) {
   if (!input.files || input.files.length === 0 || !client) return;
   const status = document.getElementById('upload-status');
-  if(status) status.innerText = "Publicando no mural... ";
+  if(status) status.innerText = "Publicando no mural... ✨";
   const file = input.files[0];
   const fileName = `guest_mural_${Date.now()}_${file.name}`;
   const { error } = await client.storage.from('desafios-festa').upload(fileName, file);
   if(error) { if(status) status.innerText = "Erro ao publicar. Tente novamente!"; return; }
   const { data: urlData } = client.storage.from('desafios-festa').getPublicUrl(fileName);
   await client.from('memorias').insert({ url: urlData.publicUrl });
-  if(status) status.innerText = "Sua foto foi para o Mural de Memórias! ✨";
+  if(status) status.innerText = "Sua foto foi para o Mural de Memórias! 🎉";
   setTimeout(() => { if(status) status.innerText = ""; }, 3000);
+  input.value = ''; // Limpa o input
 }
 
+// CARREGAR O MURAL NO LAYOUT DE REDE SOCIAL (ADAPTÁVEL)
 async function carregarFotosMural() {
   if(!client) return;
   try {
@@ -245,8 +178,18 @@ async function carregarFotosMural() {
     const lista = document.getElementById('mural-lista-fotos');
     if(lista && data) {
       lista.innerHTML = '';
+      if(data.length === 0) {
+        lista.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding:40px; font-family:'Playfair Display'; color:#a87b32; font-size:1.1rem;">Nenhuma foto publicada ainda. Seja o primeiro a enviar! 📸</div>`;
+        return;
+      }
       data.forEach(post => {
-        lista.innerHTML += `<div class="mural-post"><img src="${post.url}" class="mural-photo"><div class="mural-footer">Memória enviada por um convidado ✨</div></div>`;
+        lista.innerHTML += `
+          <div class="mural-post" style="background:#ffffff; border-radius:16px; overflow:hidden; border:1px solid rgba(200,150,62,0.3); box-shadow:0 4px 12px rgba(0,0,0,0.04); transition: transform 0.2s;">
+            <img src="${post.url}" style="width:100%; height:280px; object-fit:cover; display:block;">
+            <div style="padding:12px 16px; font-family:'Playfair Display'; font-size:0.85rem; color:#7A4F0E; display:flex; justify-content:space-between; align-items:center;">
+              <span>✨ Memória da Festa</span>
+            </div>
+          </div>`;
       });
     }
   } catch(e) { console.error(e); }
@@ -257,6 +200,39 @@ function ouvirNovasFotosMural() {
   client.channel('mural-stream').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'memorias' }, payload => {
     carregarFotosMural();
   }).subscribe();
+}
+
+// GERENCIAR E EXCLUIR FOTOS DO MURAL NO PAINEL DE CONTROLE
+async function carregarFotosMuralControle() {
+  const lista = document.getElementById('lista-mural-controle');
+  if(!client || !lista) return;
+  try {
+    const { data } = await client.from('memorias').select('*').order('created_at', { ascending: false });
+    if(data) {
+      lista.innerHTML = '';
+      if(data.length === 0) {
+        lista.innerHTML = `<div style="text-align:center; color:#7A4F0E; font-family:'Playfair Display'; padding:20px;">Nenhuma foto no mural no momento.</div>`;
+        return;
+      }
+      data.forEach(f => {
+        lista.innerHTML += `
+          <div style="display:flex; align-items:center; justify-content:space-between; background:#ffffff; padding:10px 14px; border-radius:16px; border:1px solid rgba(200,150,62,0.3); box-shadow:0 2px 8px rgba(0,0,0,0.02); margin-bottom:8px;">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <img src="${f.url}" style="width:50px; height:50px; object-fit:cover; border-radius:10px; border:1px solid rgba(200,150,62,0.3);">
+              <div style="font-family:'Playfair Display'; font-size:0.9rem; color:#7A4F0E;"><b>Foto do Mural</b></div>
+            </div>
+            <button onclick="removerFotoMural('${f.id}')" style="background:#ff4d4d; color:white; border:none; padding:6px 12px; border-radius:10px; font-size:12px; cursor:pointer; font-weight:600;">Excluir</button>
+          </div>`;
+      });
+    }
+  } catch(e) { console.error(e); }
+}
+
+async function removerFotoMural(id) {
+  if(!client) return;
+  if(!confirm("Deseja realmente excluir esta foto do mural dos convidados?")) return;
+  await client.from('memorias').delete().eq('id', id);
+  carregarFotosMuralControle();
 }
 
 async function removerFotoCat(id) {
@@ -276,6 +252,7 @@ async function carregarDadosControle() {
   carregarFotosDesafiosControle();
   carregarCronograma();
   carregarConvidados();
+  carregarFotosMuralControle(); // Carrega o gerenciamento do mural no painel
   ouvirFotosDosConvidados();
 }
 
@@ -324,7 +301,6 @@ async function carregarCronograma() {
       lista.innerHTML = '';
       data.forEach(item => {
         const isDone = item.concluido ? true : false;
-        // Escapa aspas para evitar erro ao passar os dados para a função de editar
         const tituloSeguro = (item.titulo || '').replace(/'/g, "\\'");
         const textoSeguro = (item.texto || '').replace(/'/g, "\\'").replace(/\n/g, '\\n');
         
@@ -353,22 +329,12 @@ async function adicionarCronograma() {
   if(!hora || !client) return;
 
   if (editandoId) {
-    // Se estiver editando, atualiza o registro existente
     const { error } = await client.from('cronograma').update({ hora, titulo, texto }).eq('id', editandoId);
-    if(error) {
-      alert("Erro ao atualizar cronograma: " + error.message);
-      return;
-    }
-    editandoId = null; // Reseta o modo de edição
-    const btnAdicionar = document.querySelector('#cronograma-lista ~ * button, button[onclick="adicionarCronograma()"]');
-    if(btnAdicionar) btnAdicionar.innerText = "Adicionar ao Cronograma";
+    if(error) { alert("Erro ao atualizar: " + error.message); return; }
+    editandoId = null;
   } else {
-    // Se for novo, insere normal
     const { error } = await client.from('cronograma').insert({ hora, titulo, texto, concluido: false });
-    if(error) {
-      alert("Erro ao adicionar no cronograma: " + error.message);
-      return;
-    }
+    if(error) { alert("Erro ao adicionar: " + error.message); return; }
   }
   
   if(tituloEl) tituloEl.value = '';
@@ -383,23 +349,12 @@ function prepararEdicao(id, hora, titulo, texto) {
   const tituloEl = document.getElementById('crono-novo-titulo');
   if(tituloEl) tituloEl.value = titulo !== 'null' ? titulo : '';
   document.getElementById('crono-novo-texto').value = texto !== 'null' ? texto.replace(/\\n/g, '\n') : '';
-  
-  // Muda o texto do botão principal para indicar que está salvando uma edição
-  const btnAdicionar = document.querySelector('button[onclick="adicionarCronograma()"]');
-  if(btnAdicionar) btnAdicionar.innerText = "Salvar Alterações";
-  
-  // Rola a página suavemente para o formulário de cadastro
   document.getElementById('crono-novo-horario').scrollIntoView({ behavior: 'smooth' });
 }
 
 async function toggleCrono(id, statusAtual) {
   if(!client) return;
-  const novoStatus = !statusAtual;
-  const { error } = await client.from('cronograma').update({ concluido: novoStatus }).eq('id', id);
-  if(error) {
-    alert("Erro ao atualizar status: " + error.message);
-    return;
-  }
+  await client.from('cronograma').update({ concluido: !statusAtual }).eq('id', id);
   carregarCronograma();
 }
 
