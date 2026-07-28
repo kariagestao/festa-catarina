@@ -9,14 +9,16 @@
 <style>
 * { box-sizing:border-box; margin:0; padding:0; }
 body { background:#FDE8EF; min-height:100vh; font-family:Cinzel,serif; color: #7A4F0E; overflow-x: hidden; }
-
-/* NAVEGAÇÃO DE INTERFACE */
 .view-mode { display: none; width: 100%; min-height: 100vh; }
 .view-mode.active { display: block; }
 
-/* ================= DESIGN IDENTIDADE VISUAL DO TELÃO (TELA CHEIA ORIGINAL) ================= */
+/* ================= DESIGN IDENTIDADE VISUAL DO TELÃO (PREENCHIMENTO AUTOMÁTICO PINK) ================= */
 #view-telao { 
-    background: #FDE8EF; 
+    background: #C00060; 
+    background-image: url('https://supabase.co');
+    background-size: contain; 
+    background-position: center;
+    background-repeat: no-repeat;
     width: 100vw; 
     height: 100vh; 
     overflow: hidden; 
@@ -24,105 +26,13 @@ body { background:#FDE8EF; min-height:100vh; font-family:Cinzel,serif; color: #7
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: space-between;
-    padding: 6vh 0 8vh 0;
+    justify-content: flex-end;
+    padding: 0 0 8vh 0;
 }
-
-/* Elementos Estáticos da Arte da Festa */
-.telao-brand {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    flex: 1;
-    width: 100%;
-    z-index: 2;
-}
-.telao-main-title { 
-    font-size: 5.5rem; 
-    color: #000000; 
-    font-weight: 400; 
-    letter-spacing: 0.02em;
-    margin-bottom: 2vh;
-}
-.telao-age-box {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
-.telao-number {
-    font-size: 14rem;
-    font-weight: 700;
-    line-height: 0.8;
-    background: linear-gradient(135deg, #C8963E 0%, #9B6B1A 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-.telao-years {
-    font-family: 'Playfair Display', serif;
-    font-style: italic;
-    font-size: 4.5rem;
-    background: linear-gradient(135deg, #C8963E 0%, #9B6B1A 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    margin-top: 1vh;
-}
-
-/* Container de Mídia Dinâmico (Slideshow / Desafios) */
-#telao-container-midia {
-    display: none;
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 3;
-    background: #FDE8EF;
-}
-#telao-canvas {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-/* Barra de Legenda Dinâmica Inferior (Igual à Foto) */
-.telao-badge-momento {
-    background: #ffffff;
-    border: 1px solid rgba(200,150,62,0.4);
-    padding: 14px 40px;
-    border-radius: 30px;
-    font-family: Cinzel, serif;
-    font-size: 1.4rem;
-    letter-spacing: 0.15em;
-    color: #C00060;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    box-shadow: 0 4px 20px rgba(155,107,26,0.1);
-    z-index: 5;
-    text-transform: uppercase;
-}
-.telao-badge-momento::before, .telao-badge-momento::after {
-    content: "✦";
-    color: #C00060;
-    font-size: 1.1rem;
-}
-
-/* Sub-botão de Retorno Técnico Oculto */
-.telao-btn-voltar {
-    position: absolute;
-    bottom: 2vh;
-    background: rgba(255,255,255,0.4);
-    border: 1px solid rgba(200,150,62,0.2);
-    color: rgba(155,107,26,0.6);
-    padding: 4px 14px;
-    border-radius: 20px;
-    font-size: 9px;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    z-index: 5;
-    pointer-events: none;
-}
+#telao-container-midia { display: none; position: absolute; inset: 0; width: 100%; height: 100%; z-index: 3; background: #FDE8EF; }
+#telao-canvas { width: 100%; height: 100%; object-fit: cover; }
+.telao-badge-momento { background: #ffffff; border: 1px solid rgba(200,150,62,0.4); padding: 14px 40px; border-radius: 30px; font-family: Cinzel, serif; font-size: 1.4rem; letter-spacing: 0.15em; color: #C00060; display: flex; align-items: center; gap: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); z-index: 5; text-transform: uppercase; }
+.telao-badge-momento::before, .telao-badge-momento::after { content: "✦"; color: #C00060; font-size: 1.1rem; }
 
 /* ================= DESIGN DA TORRE DE COMANDO E COMPONENTES ================= */
 #controls { display:flex; flex-direction:column; align-items:center; padding:24px; min-height:100vh; text-align: center; }
@@ -162,29 +72,15 @@ body { background:#FDE8EF; min-height:100vh; font-family:Cinzel,serif; color: #7
 </style>
 </head>
 <body>
-<!-- ================= MODO 1: CONTEÚDO VISUAL ESTRUTURAL DO TELÃO ================= -->
+
+<!-- ================= MODO 1: TELÃO OFICIAL ================= -->
 <div id="view-telao" class="view-mode">
-    <!-- Bloco Dinâmico para Slideshow de Fotos ou Desafios -->
     <div id="telao-container-midia">
         <img id="telao-canvas" src="" alt="Slideshow">
     </div>
-
-    <!-- Arte Clássica do Layout Principal (Visível nos Momentos de Texto) -->
-    <div class="telao-brand" id="telao-arte-estatica">
-        <h1 class="telao-main-title">Catarina</h1>
-        <div class="telao-age-box">
-            <span class="telao-number">15</span>
-            <span class="telao-years">anos</span>
-        </div>
-    </div>
-
-    <!-- Legenda Dinâmica Inferior (Igualzinha à Imagem de Referência) -->
     <div class="telao-badge-momento" id="telao-subtitulo">Recepção</div>
-    
-    <div class="telao-btn-voltar">Toque para voltar aos controles</div>
 </div>
-
-<!-- ================= MODO 2: PAINEL DE CONTROLE (SUA TORRE DE COMANDO) ================= -->
+<!-- ================= MODO 2: PAINEL DE CONTROLE ================= -->
 <div id="view-controle" class="view-mode">
     <div id="controls">
         <div class="mode-nav">
@@ -199,7 +95,6 @@ body { background:#FDE8EF; min-height:100vh; font-family:Cinzel,serif; color: #7
             <button id="btn-congelar" class="freeze-btn" onclick="toggleCongelar()">Congelar Telão: OFF</button>
         </div>
 
-        <!-- ABA: SELEÇÃO DE MOMENTOS -->
         <div id="screen-telao-manager" class="screen active">
             <h2 class="section-title">Selecione o Momento para Projetar</h2>
             <p class="section-sub">Altere a legenda inferior do telão em tempo real</p>
@@ -214,10 +109,8 @@ body { background:#FDE8EF; min-height:100vh; font-family:Cinzel,serif; color: #7
             </div>
         </div>
 
-        <!-- ABA: CONTROLE DE FOTOS DA CATARINA -->
         <div id="screen-fotos" class="screen">
             <h2 class="section-title">Fotos de Crescimento</h2>
-            <p class="section-sub">Essas fotos rodam quando o momento "Só a Arte" estiver selecionado</p>
             <div class="photo-grid" id="grid-fotos-cat"></div>
             <label class="file-input-wrapper" style="max-width:200px; font-size:11px; background: #C8963E;">
                 + Enviar Nova Foto
@@ -225,14 +118,11 @@ body { background:#FDE8EF; min-height:100vh; font-family:Cinzel,serif; color: #7
             </label>
         </div>
 
-        <!-- ABA: FLUXO DE DESAFIOS -->
         <div id="screen-desafios" class="screen">
             <h2 class="section-title">Fotos dos Desafios</h2>
-            <p class="section-sub">Últimas fotos recebidas dos convidados</p>
             <div class="desafio-queue" id="lista-desafios-stream"></div>
         </div>
 
-        <!-- ABA: CRONOGRAMA -->
         <div id="screen-cronograma" class="screen">
             <h2 class="section-title">Cronograma da Festa</h2>
             <div class="crono-list" id="cronograma-lista"></div>
@@ -243,7 +133,6 @@ body { background:#FDE8EF; min-height:100vh; font-family:Cinzel,serif; color: #7
             </div>
         </div>
 
-        <!-- ABA: CONVIDADOS -->
         <div id="screen-convidados" class="screen">
             <h2 class="section-title">Lista de Convidados</h2>
             <div class="convidados-list" id="convidados-lista"></div>
@@ -261,14 +150,12 @@ body { background:#FDE8EF; min-height:100vh; font-family:Cinzel,serif; color: #7
     <div class="guest-container">
         <h2 class="section-title" style="font-size:2rem; margin-top: 20px;">15 Anos de Catarina</h2>
         <p class="section-sub">Compartilhe suas memórias!</p>
-        
         <select class="select-desafio" id="guest-escolha-desafio">
             <option value="Memória Livre">Foto Livre (Memória da Festa)</option>
             <option value="Desafio 1">Desafio: Foto com a Debutante</option>
             <option value="Desafio 2">Desafio: Foto na Mesa de Doces</option>
             <option value="Desafio 3">Desafio: Careta na Pista de Dança</option>
         </select>
-
         <label class="file-input-wrapper">
             📸 Tirar ou Escolher Foto
             <input type="file" accept="image/*" onchange="uploadFotoConvidado(this)">
