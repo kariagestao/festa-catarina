@@ -6,7 +6,6 @@
     <title>15 Anos de Catarina - Telão</title>
     <link href="https://googleapis.com" rel="stylesheet">
     
-    <!-- NOVO LINK DO SUPABASE (SERVIDOR ALTERNATIVO ANTI-BLOQUEIO) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
@@ -49,7 +48,7 @@
             object-fit: cover; 
         }
 
-        /* Legenda Rosa Bebê ajustada milimetricamente para baixo do "15 anos" */
+        /* Legenda Rosa Bebê posicionada logo abaixo da palavra "anos" */
         .telao-badge-momento { 
             display: none; 
             background: #FDE8EF; 
@@ -67,7 +66,7 @@
             z-index: 5; 
             text-transform: uppercase; 
             position: absolute;
-            top: 64%; 
+            top: 70%; /* <--- ALTERADO AQUI PARA DESCER AINDA MAIS (ABAIXO DE ANOS) */
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
