@@ -161,9 +161,9 @@ async function uploadFotoMuralConvidado(input) {
   if(status) status.innerText = "Publicando no mural... ✨";
   const file = input.files[0];
   const fileName = `guest_mural_${Date.now()}_${file.name}`;
-  const { error } = await client.storage.from('desafios-festa').upload(fileName, file);
+  const { error } = await client.storage.from('mural-festa').upload(fileName, file);
   if(error) { if(status) status.innerText = "Erro ao publicar. Tente novamente!"; return; }
-  const { data: urlData } = client.storage.from('desafios-festa').getPublicUrl(fileName);
+  const { data: urlData } = client.storage.from('mural-festa').getPublicUrl(fileName);
   await client.from('memorias').insert({ url: urlData.publicUrl });
   if(status) status.innerText = "Sua foto foi para o Mural de Memórias! 🎉";
   setTimeout(() => { if(status) status.innerText = ""; }, 3000);
