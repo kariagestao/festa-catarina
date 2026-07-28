@@ -1,10 +1,10 @@
 const SUPABASE_URL = "https://hrqqriybcpmnsinswyop.supabase.co";
 const SUPABASE_KEY = "sb_publishable_BEGEdQzqZc2FtPrPgJPh9Q_CQMHioqM";
 
-const supabase = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-);
+console.log("window.supabase =", window.supabase);
+console.log("supabase =", supabase);
+
+console.log(window.supabase);
 
 let congelado = false;
 let fotosCatAtuais = [];
