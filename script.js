@@ -155,6 +155,15 @@ async function atualizarVisualTelao(momento) {
         if (arteFundoReal) { arteFundoReal.src = "arte-festa.jpg"; arteFundoReal.style.display = 'block'; }
       }
     } catch(e) { console.error(e); }
+  } else if (momento === 'HOMENAGEM AOS AVÓS') {
+    if (arteFundoReal) arteFundoReal.style.display = 'none';
+    if(containerMidia) containerMidia.style.display = 'block';
+    if(canvas) canvas.src = "https://hrqqriybcpmnsinswyop.supabase.co/storage/v1/object/public/homenagem-avos/WhatsApp%20Image%202026-07-28%20at%2020.36.05.jpeg";
+    
+    if(badge) {
+      badge.style.display = 'flex';
+      badge.innerText = "ETERNAMENTE EM NOSSOS CORAÇÕES ❤️";
+    }
   } else {
     if(containerMidia) containerMidia.style.display = 'none';
     if (arteFundoReal) { arteFundoReal.src = "arte-festa.jpg"; arteFundoReal.style.display = 'block'; }
