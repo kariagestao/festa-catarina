@@ -30,15 +30,15 @@
     input[type="text"], textarea, select { width: 100%; padding: 12px 16px; margin-bottom: 12px; border: 1px solid rgba(200,150,62,0.4); border-radius: 16px; background: #ffffff; font-family: 'Playfair Display', serif; color: #7A4F0E; outline: none; }
     input::placeholder, textarea::placeholder { color: rgba(122,79,14,0.5); }
     textarea { resize: vertical; min-height: 90px; }
-    .upload-label { display: block; background: #ffffff; border: 1px dashed #cd0277; color: #cd0277; padding: 14px; border-radius: 20px; text-align: center; font-size: 11px; letter-spacing: 0.05em; cursor: pointer; margin-bottom: 15px; font-weight: 600; }
+    .upload-label { display: block; background: #ffffff; border: 1px dashed #cd0277; color: #cd0277; padding: 14px; border-radius: 20px; text-align: center; font-size: 11px; letter-spacing: 0.05em; cursor: pointer; margin-bottom: 15px; font-weight: 600; width: 100%; }
     .upload-label input { display: none; }
-    .convidado-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: #ffffff; border-radius: 16px; margin-bottom: 8px; border: 1px solid rgba(200,150,62,0.3); cursor: pointer; }
+    .convidado-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: #ffffff; border-radius: 16px; margin-bottom: 8px; border: 1px solid rgba(200,150,62,0.3); cursor: pointer; width: 100%; }
     .convidado-item.presente { background: rgba(40,167,69,0.08); border-color: #28a745; }
     .conv-check { font-weight: bold; color: #28a745; opacity: 0; }
     .convidado-item.presente .conv-check { opacity: 1; }
     .conv-nome { font-family: 'Playfair Display', serif; font-size: 1rem; color: #7A4F0E; }
     .conv-del { background: none; border: none; color: #cd0277; font-size: 14px; cursor: pointer; padding: 4px; }
-    .crono-item { background: #ffffff; padding: 16px; border-radius: 16px; margin-bottom: 12px; border: 1px solid rgba(200,150,62,0.3); box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
+    .crono-item { background: #ffffff; padding: 16px; border-radius: 16px; margin-bottom: 12px; border: 1px solid rgba(200,150,62,0.3); box-shadow: 0 4px 15px rgba(0,0,0,0.02); width: 100%; }
     .crono-item.done { opacity: 0.6; background: rgba(0,0,0,0.02); }
   </style>
 </head>
@@ -82,12 +82,12 @@
       <input type="file" accept="image/*" onchange="uploadFotoCat(this)">
     </label>
     <div id="grid-fotos-cat" class="photo-grid"></div>
-  </div>
-  <div style="margin-top: 30px; background: rgba(255,255,255,0.7); padding: 20px; border-radius: 20px; border: 1px solid rgba(200,150,62,0.3);">
-  <h3 style="font-family:'Cinzel'; color:#cd0277; margin-bottom: 15px;">Gerenciar Mural de Memórias (Convidados)</h3>
-  <div id="lista-mural-controle">
+
+    <div style="margin-top: 30px; width: 100%; background: rgba(255,255,255,0.7); padding: 20px; border-radius: 20px; border: 1px solid rgba(200,150,62,0.3);">
+      <h3 style="font-family:'Cinzel'; color:#cd0277; margin-bottom: 15px; font-size: 1.1rem;">Gerenciar Mural de Memórias (Convidados)</h3>
+      <div id="lista-mural-controle"></div>
     </div>
-</div>
+  </div>
 
   <div id="screen-desafios" class="screen">
     <h2 class="section-title">Desafios & Transmissão</h2>
