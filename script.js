@@ -1,8 +1,8 @@
 const SUPABASE_URL = 'https://supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhycXFyaXliY3BtbnNpbnN3eW9wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2NDE0MTEsImV4cCI6MjEwMDc4NDQ0OH0.IasE0zT3L58GAnE0S8rRThf4hC1Lz8S9jF1R8vX9zWk';
 
-// Inicialização forçada com letra minúscula 'supabase' para bater com todas as funções
-const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+// Inicialização direta e sem barreiras usando a biblioteca global ativa do unpkg
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let congelado = false;
 let fotosCatAtuais = [];
@@ -42,17 +42,14 @@ async function toggleCongelar() {
     btn.innerText = congelado ? "TELÃO: CONGELADO" : "CONGELAR TELÃO: OFF";
     btn.classList.toggle('frozen', congelado);
   }
-  if(supabase) await supabase.from('config').upsert({ id: 1, congelado: congelado });
+  await supabase.from('config').upsert({ id: 1, congelado: congelado });
 }
 
 async function setMomento(nome) {
-  if(supabase) {
-    await supabase.from('config').upsert({ id: 1, momento_atual: nome });
-  }
+  await supabase.from('config').upsert({ id: 1, momento_atual: nome });
 }
 
 async function inicializarTelão() {
-  if(!supabase) return;
   const { data: configInit } = await supabase.from('config').select('*').eq('id', 1).single();
   if(configInit) {
     congelado = configInit.congelado;
@@ -93,7 +90,7 @@ async function atualizarVisualTelao(momento) {
     const { data } = await supabase.from('fotos_catarina').select('url');
     if(data && data.length > 0) {
       fotosCatAtuais = data.map(f => f.url);
-      if(canvas) canvas.src = fotosCatAtuais[0];
+      if(canvas) canvas.src = fotosCatAtuais;
       slideIndex = 0;
       rodarSlideshow();
     } else {
@@ -139,7 +136,7 @@ function exibirFotoDestaqueNoTelao(url, legenda) {
   }, 8000);
 }
 async function uploadFotoCat(input) {
-  if (!input.files || input.files.length === 0 || !supabase) return;
+  if (!input.files || input.files.length === 0) return;
   const file = input.files;
   const fileName = `cat_${Date.now()}_${file.name}`;
   const { data, error } = await supabase.storage.from('festa-cat').upload(fileName, file);
@@ -150,7 +147,7 @@ async function uploadFotoCat(input) {
 }
 
 async function uploadFotoDesafioAdmin(input) {
-  if (!input.files || input.files.length === 0 || !supabase) return;
+  if (!input.files || input.files.length === 0) return;
   const status = document.getElementById('admin-upload-status');
   if(status) status.innerText = "Enviando desafio para o telão... ";
   const file = input.files;
@@ -165,7 +162,7 @@ async function uploadFotoDesafioAdmin(input) {
 }
 
 async function uploadFotoMuralConvidado(input) {
-  if (!input.files || input.files.length === 0 || !supabase) return;
+  if (!input.files || input.files.length === 0) return;
   const status = document.getElementById('upload-status');
   if(status) status.innerText = "Publicando no mural... ";
   const file = input.files;
@@ -179,7 +176,6 @@ async function uploadFotoMuralConvidado(input) {
 }
 
 async function carregarFotosMural() {
-  if(!supabase) return;
   const { data } = await supabase.from('memorias').select('*').order('created_at', { ascending: false });
   const lista = document.getElementById('mural-lista-fotos');
   if(lista && data) {
@@ -191,7 +187,6 @@ async function carregarFotosMural() {
 }
 
 function ouvirNovasFotosMural() {
-  if(!supabase) return;
   supabase.channel('mural-stream').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'memorias' }, payload => {
     const post = payload.new;
     const lista = document.getElementById('mural-lista-fotos');
@@ -202,13 +197,11 @@ function ouvirNovasFotosMural() {
 }
 
 async function removerFotoCat(id) {
-  if(!supabase) return;
   await supabase.from('fotos_catarina').delete().eq('id', id);
   carregarFotosCatControle();
 }
 
 async function carregarDadosControle() {
-  if(!supabase) return;
   carregarFotosCatControle();
   carregarCronograma();
   carregarConvidados();
@@ -287,7 +280,6 @@ async function deletarConvidado(id) {
 
 function ouvirFotosDosConvidados() {
   const lista = document.getElementById('lista-desafios-stream');
-  if(!supabase) return;
   supabase.channel('stream-controle').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'fotos_desafios' }, payload => {
     const f = payload.new;
     if(lista) {
@@ -296,7 +288,6 @@ function ouvirFotosDosConvidados() {
   }).subscribe();
 }
 
-// Inicialização segura após DOM totalmente carregado
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', inicializarSistemaPorPagina);
 } else {
