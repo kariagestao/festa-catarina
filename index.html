@@ -14,39 +14,57 @@ body { background:#cd0277; min-height:100vh; font-family:Cinzel,serif; color: #7
 
 /* ================= DESIGN IDENTIDADE VISUAL DO TELÃO (BORDA INFINITA) ================= */
 #view-telao { 
-    background-color: #cd0277 !important; 
-    width: 100vw; 
-    height: 100vh; 
-    overflow: hidden; 
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-end;
-    padding: 0 0 8vh 0;
+ background-color: #cd0277 !important; 
+ width: 100vw; 
+ height: 100vh; 
+ overflow: hidden; 
+ position: relative;
+ display: flex;
+ flex-direction: column;
+ align-items: center;
+ justify-content: center;
 }
 #telao-arte-fundo-real {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-    z-index: 1;
+ position: absolute;
+ top: 50%;
+ left: 50%;
+ transform: translate(-50%, -50%);
+ max-width: 100%;
+ max-height: 100%;
+ object-fit: contain;
+ z-index: 1;
 }
 #telao-container-midia { display: none; position: absolute; inset: 0; width: 100%; height: 100%; z-index: 3; background: #FDE8EF; }
 #telao-canvas { width: 100%; height: 100%; object-fit: cover; }
-.telao-badge-momento { display: none; background: #ffffff; border: 1px solid rgba(200,150,62,0.4); padding: 14px 40px; border-radius: 30px; font-family: Cinzel, serif; font-size: 1.4rem; letter-spacing: 0.15em; color: #cd0277; align-items: center; gap: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); z-index: 5; text-transform: uppercase; }
-.telao-badge-momento::before, .telao-badge-momento::after { content: "✦"; color: #cd0277; font-size: 1.1rem; }
 
-/* ================= DESIGN DA TORRE DE COMANDO (TOTALMENTE LIMPO E SEM IMAGENS) ================= */
-#view-controle { 
-    background-color: #FDE8EF !important; 
-    background-image: none !important;    
-    min-height: 100vh;
-    width: 100%;
-} 
+/* Legenda posicionada cirurgicamente logo abaixo do "15 anos" */
+.telao-badge-momento { 
+ display: none; 
+ background: #FDE8EF; 
+ border: 1px solid rgba(200,150,62,0.4); 
+ padding: 12px 35px; 
+ border-radius: 30px; 
+ font-family: Cinzel, serif; 
+ font-size: 1.3rem; 
+ font-weight: 600;
+ letter-spacing: 0.1em; 
+ color: #cd0277; 
+ align-items: center; 
+ justify-content: center;
+ gap: 15px; 
+ box-shadow: 0 6px 20px rgba(0,0,0,0.15); 
+ z-index: 5; 
+ text-transform: uppercase; 
+ position: absolute;
+ top: 62%; 
+ left: 50%;
+ transform: translate(-50%, -50%);
+ text-align: center;
+ white-space: nowrap;
+}
+.telao-badge-momento::before, .telao-badge-momento::after { content: "✦"; color: #C8963E; font-size: 1rem; }
+/* ================= DESIGN DA TORRE DE COMANDO ================= */
+#view-controle { background-color: #FDE8EF !important; background-image: none !important; min-height: 100vh; width: 100%; } 
 #controls { display:flex; flex-direction:column; align-items:center; padding:24px; min-height:100vh; text-align: center; width: 100%; }
 .mode-nav, .moment-btns { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; justify-content:center; width: 100%; max-width: 800px; }
 .mode-btn, .moment-btn { background:#ffffff; border:1px solid rgba(200,150,62,0.5); color:#9B6B1A; padding:10px 20px; border-radius:20px; font-family:Cinzel,serif; font-size:12px; cursor:pointer; letter-spacing:0.05em; transition:all 0.3s; text-transform: uppercase; font-weight: 600; }
@@ -63,7 +81,7 @@ body { background:#cd0277; min-height:100vh; font-family:Cinzel,serif; color: #7
 .photo-slot img { width:100%; height:100%; object-fit:cover; position:absolute; inset:0; }
 .remove-btn { position:absolute; top:4px; right:4px; width:22px; height:22px; border-radius:50%; background:rgba(180,0,0,0.8); border:none; color:#fff; font-size:11px; cursor:pointer; z-index:5; display:flex; align-items:center; justify-content:center; }
 .crono-list, .convidados-list, .desafio-queue { width:100%; max-width:680px; display:flex; flex-direction:column; gap:8px; margin-bottom: 15px; }
-.crono-item, .convidado-item, .desafio-item { display:flex; align-items:center; gap:14px; background:#ffffff; border:1px solid rgba(200,150,62,0.3); border-radius:8px; padding:14px 18px; cursor:pointer; transition: 0.2s; box-shadow: 0 2px 6px rgba(0,0,0,0.02); }
+.crono-item, .convidado-item, .desafio-item { display:flex; align-items:center; gap:14px; background:#ffffff; border:1px solid rgba(200,150,62,0.3); border-radius:8px; padding:14px 18px; cursor:pointer; transition: 0.2s; box-shadow: 0 2px 6px rgba(0,0,0,0.02); text-align: left; }
 .crono-item.done, .convidado-item.presente { background:rgba(0,130,0,0.06); border-color:rgba(0,130,0,0.3); }
 .crono-check, .conv-check { width:24px; height:24px; border-radius:50%; border:2px solid rgba(200,150,62,0.6); display:flex; align-items:center; justify-content:center; font-size:12px; color:transparent; font-weight: bold; }
 .crono-item.done .crono-check, .convidado-item.presente .conv-check { background:#008200; border-color:#008200; color:#fff; }
@@ -76,106 +94,118 @@ body { background:#cd0277; min-height:100vh; font-family:Cinzel,serif; color: #7
 .action-btn { background:#cd0277; border:none; color:#ffffff; padding:10px 24px; border-radius:24px; font-family:Cinzel,serif; font-size:12px; cursor:pointer; font-weight: 600; box-shadow: 0 2px 6px rgba(205,2,119,0.2); }
 .conv-del { background:none; border:none; color:rgba(180,0,0,0.5); font-size:16px; cursor:pointer; padding: 0 6px; }
 .desafio-thumb { width:46px; height:46px; border-radius:4px; object-fit:cover; border:1px solid rgba(200,150,62,0.3); }
-.guest-container { padding: 30px 20px; text-align: center; max-width: 480px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; background: #FDE8EF; min-height: 100vh; }
-.select-desafio { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #C8963E; font-family: Cinzel, serif; margin-bottom: 15px; background: #fff; color: #7A4F0E; outline: none; }
-.file-input-wrapper { background: #cd0277; color: white; padding: 12px 24px; border-radius: 25px; cursor: pointer; display: inline-block; width: 100%; max-width: 280px; font-weight: bold; margin-top: 10px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; border: none; text-align: center; }
+.select-desafio { width: 100%; max-width: 320px; padding: 12px; border-radius: 20px; border: 1px solid #C8963E; font-family: Cinzel, serif; margin-bottom: 15px; background: #fff; color: #7A4F0E; outline: none; font-size: 12px; text-transform: uppercase; }
+.file-input-wrapper { background: #cd0277; color: white; padding: 12px 24px; border-radius: 25px; cursor: pointer; display: inline-block; width: 100%; max-width: 280px; font-weight: bold; margin-top: 10px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; border: none; text-align: center; box-shadow: 0 4px 10px rgba(205,2,119,0.2); }
 .file-input-wrapper input { display: none; }
 .pill { font-family:Cinzel,serif; font-size:12px; color:#7A4F0E; letter-spacing:0.08em; margin-top:12px; border:1px solid rgba(200,150,62,0.35); padding:8px 20px; border-radius:20px; background:#ffffff; box-shadow: 0 2px 6px rgba(0,0,0,0.02); }
+
+/* ================= DESIGN MURAL DE MEMÓRIAS (REDE SOCIAL) ================= */
+.mural-container { padding: 24px 16px; max-width: 500px; margin: 0 auto; background: #FDE8EF; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+.mural-grid { width: 100%; display: flex; flex-direction: column; gap: 16px; margin-top: 20px; }
+.mural-post { background: white; border-radius: 12px; border: 1px solid rgba(200,150,62,0.25); overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.03); width: 100%; }
+.mural-photo { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; }
+.mural-footer { padding: 12px 16px; font-family: 'Playfair Display', serif; font-size: 14px; color: #7A4F0E; border-top: 1px solid #f9f0f3; text-align: left; background: #fff; }
 </style>
 </head>
 <body>
-
 <!-- ================= MODO 1: TELÃO OFICIAL ================= -->
 <div id="view-telao" class="view-mode">
-    <img id="telao-arte-fundo-real" src="arte-festa.jpg" alt="Arte de Fundo Oficial">
-    <div id="telao-container-midia">
-        <img id="telao-canvas" src="" alt="Slideshow">
-    </div>
-    <div class="telao-badge-momento" id="telao-subtitulo">RECEPÇÃO DOS CONVIDADOS</div>
+ <img id="telao-arte-fundo-real" src="arte-festa.jpg" alt="Arte de Fundo Oficial">
+ <div id="telao-container-midia">
+ <img id="telao-canvas" src="" alt="Slideshow">
+ </div>
+ <div class="telao-badge-momento" id="telao-subtitulo">RECEPÇÃO DOS CONVIDADOS</div>
 </div>
-<!-- ================= MODO 2: PAINEL DE CONTROLE (TORRE DE COMANDO PORTARIA) ================= -->
+
+<!-- ================= MODO 2: PAINEL DE CONTROLE (TORRE DE COMANDO) ================= -->
 <div id="view-controle" class="view-mode">
-    <div id="controls">
-        <div class="mode-nav">
-            <button class="mode-btn active" onclick="switchScreen('telao-manager')">Telão</button>
-            <button class="mode-btn" onclick="switchScreen('fotos')">Fotos Cat</button>
-            <button class="mode-btn" onclick="switchScreen('desafios')">Desafios</button>
-            <button class="mode-btn" onclick="switchScreen('cronograma')">Cronograma</button>
-            <button class="mode-btn" onclick="switchScreen('convidados')">Convidados</button>
-        </div>
+ <div id="controls">
+ <div class="mode-nav">
+ <button class="mode-btn active" onclick="switchScreen('telao-manager')">Telão</button>
+ <button class="mode-btn" onclick="switchScreen('fotos')">Fotos Cat</button>
+ <button class="mode-btn" onclick="switchScreen('desafios')">Desafios</button>
+ <button class="mode-btn" onclick="switchScreen('cronograma')">Cronograma</button>
+ <button class="mode-btn" onclick="switchScreen('convidados')">Convidados</button>
+ </div>
+ 
+ <div class="freeze-bar">
+ <button id="btn-congelar" class="freeze-btn" onclick="toggleCongelar()">CONGELAR TELÃO: OFF</button>
+ </div>
+ 
+ <div id="screen-telao-manager" class="screen active">
+ <h2 class="section-title">Selecione o Momento para Projetar</h2>
+ <p class="section-sub">Altere a legenda do telão em tempo real abaixo do "15 Anos"</p>
+ <div class="moment-btns">
+ <button class="moment-btn" onclick="setMomento('RECEPÇÃO DOS CONVIDADOS')">Recepção dos Convidados</button>
+ <button class="moment-btn" onclick="setMomento('ENTRADA DA CATARINA')">Entrada da Catarina</button>
+ <button class="moment-btn" onclick="setMomento('TROCA DE SAPATO')">Troca de Sapato</button>
+ <button class="moment-btn" onclick="setMomento('VALSA')">Valsa</button>
+ <button class="moment-btn" onclick="setMomento('AGRADECIMENTOS ESPECIAIS')">Agradecimentos Especiais</button>
+ <button class="moment-btn" onclick="setMomento('PARABÉNS')">Parabéns</button>
+ <button class="moment-btn" onclick="setMomento('ABERTURA DA PISTA DE DANÇA')">Abertura da Pista</button>
+ <button class="moment-btn" onclick="setMomento('SLIDESHOW DA CATARINA')">Slideshow da Catarina</button>
+ </div>
+ </div>
+ <div id="screen-fotos" class="screen">
+ <h2 class="section-title">Fotos de Crescimento</h2>
+ <p class="section-sub">Suba as fotos previamente para rodar no slideshow do jantar</p>
+ <div class="photo-grid" id="grid-fotos-cat"></div>
+ <label class="file-input-wrapper" style="max-width:200px; font-size:11px; background: #C8963E;">
+ + Enviar Nova Foto
+ <input type="file" accept="image/*" onchange="uploadFotoCat(this)">
+ </label>
+ </div>
 
-        <div class="freeze-bar">
-            <button id="btn-congelar" class="freeze-btn" onclick="toggleCongelar()">CONGELAR TELÃO: OFF</button>
-        </div>
-
-        <div id="screen-telao-manager" class="screen active">
-            <h2 class="section-title">Selecione o Momento para Projetar</h2>
-            <p class="section-sub">Altere a legenda inferior do telão em tempo real</p>
-            <div class="moment-btns">
-                <button class="moment-btn" onclick="setMomento('RECEPÇÃO DOS CONVIDADOS')">Recepção dos Convidados</button>
-                <button class="moment-btn" onclick="setMomento('ENTRADA DA CATARINA')">Entrada da Catarina</button>
-                <button class="moment-btn" onclick="setMomento('TROCA DE SAPATO')">Troca de Sapato</button>
-                <button class="moment-btn" onclick="setMomento('VALSA')">Valsa</button>
-                <button class="moment-btn" onclick="setMomento('AGRADECIMENTOS ESPECIAIS')">Agradecimentos Especiais</button>
-                <button class="moment-btn" onclick="setMomento('PARABÉNS')">Parabéns</button>
-                <button class="moment-btn" onclick="setMomento('ABERTURA DA PISTA DE DANÇA')">Abertura da Pista</button>
-                <button class="moment-btn" onclick="setMomento('Só a Arte')">Só a Arte</button>
-            </div>
-        </div>
-
-        <div id="screen-fotos" class="screen">
-            <h2 class="section-title">Fotos de Crescimento</h2>
-            <div class="photo-grid" id="grid-fotos-cat"></div>
-            <label class="file-input-wrapper" style="max-width:200px; font-size:11px; background: #C8963E;">
-                + Enviar Nova Foto
-                <input type="file" accept="image/*" onchange="uploadFotoCat(this)">
-            </label>
-        </div>
-
-        <div id="screen-desafios" class="screen">
-            <h2 class="section-title">Fotos dos Desafios</h2>
-            <div class="desafio-queue" id="lista-desafios-stream"></div>
-        </div>
-
-        <div id="screen-cronograma" class="screen">
-            <h2 class="section-title">Cronograma da Festa</h2>
-            <div class="crono-list" id="cronograma-lista"></div>
-            <div class="crono-add">
-                <input type="text" class="crono-hora-input" id="crono-novo-horario" placeholder="22:30">
-                <input type="text" class="crono-input" id="crono-novo-texto" placeholder="Momento...">
-                <button class="action-btn" onclick="adicionarCronograma()">+</button>
-            </div>
-        </div>
-
-        <div id="screen-convidados" class="screen">
-            <h2 class="section-title">Lista de Convidados</h2>
-            <div class="convidados-list" id="convidados-lista"></div>
-            <div class="crono-add">
-                <input type="text" class="crono-input" id="conv-novo-nome" placeholder="Nome do Convidado...">
-                <button class="action-btn" onclick="adicionarConvidado()">+</button>
-            </div>
-            <div class="pill" id="conv-contador">Presentes: 0</div>
-        </div>
-    </div>
+ <div id="screen-desafios" class="screen">
+ <h2 class="section-title">Fotos dos Desafios</h2>
+ <p class="section-sub">Tire a foto do desafio cumprido e suba para o telão</p>
+ <select class="select-desafio" id="admin-escolha-desafio">
+   <option value="Foto com a Debutante">Desafio: Foto com a Debutante</option>
+   <option value="Foto na Mesa de Doces">Desafio: Foto na Mesa de Doces</option>
+   <option value="Careta na Pista de Dança">Desafio: Careta na Pista de Dança</option>
+ </select>
+ <label class="file-input-wrapper">
+ 📸 Tirar Foto do Desafio
+ <input type="file" accept="image/*" onchange="uploadFotoDesafioAdmin(this)">
+ </label>
+ <p id="admin-upload-status" style="margin-top:15px; font-family:'Playfair Display'; font-style:italic; color:#9B6B1A;"></p>
+ <div class="desafio-queue" id="lista-desafios-stream" style="margin-top:20px;"></div>
+ </div>
+ 
+ <div id="screen-cronograma" class="screen">
+ <h2 class="section-title">Cronograma da Festa</h2>
+ <div class="crono-list" id="cronograma-lista"></div>
+ <div class="crono-add">
+ <input type="text" class="crono-hora-input" id="crono-novo-horario" placeholder="22:30">
+ <input type="text" class="crono-input" id="crono-novo-texto" placeholder="Momento...">
+ <button class="action-btn" onclick="adicionarCronograma()">+</button>
+ </div>
+ </div>
+ 
+ <div id="screen-convidados" class="screen">
+ <h2 class="section-title">Lista de Convidados</h2>
+ <div class="convidados-list" id="convidados-lista"></div>
+ <div class="crono-add">
+ <input type="text" class="crono-input" id="conv-novo-nome" placeholder="Nome do Convidado...">
+ <button class="action-btn" onclick="adicionarConvidado()">+</button>
+ </div>
+ <div class="pill" id="conv-contador">Presentes: 0</div>
+ </div>
+ </div>
 </div>
 
-<!-- ================= MODO 3: INTERFACE DO CONVIDADO (QR CODE) ================= -->
+<!-- ================= MODO 3: INTERFACE DO CONVIDADO (MURAL DE MEMÓRIAS - QR CODE) ================= -->
 <div id="view-convidado" class="view-mode">
-    <div class="guest-container">
-        <h2 class="section-title" style="font-size:2rem; margin-top: 20px;">15 Anos de Catarina</h2>
-        <p class="section-sub">Compartilhe suas memórias!</p>
-        <select class="select-desafio" id="guest-escolha-desafio">
-            <option value="Memória Livre">Foto Livre (Memória da Festa)</option>
-            <option value="Desafio 1">Desafio: Foto com a Debutante</option>
-            <option value="Desafio 2">Desafio: Foto na Mesa de Doces</option>
-            <option value="Desafio 3">Desafio: Careta na Pista de Dança</option>
-        </select>
-        <label class="file-input-wrapper">
-            📸 Tirar ou Escolher Foto
-            <input type="file" accept="image/*" onchange="uploadFotoConvidado(this)">
-        </label>
-        <p id="upload-status" style="margin-top:20px; font-family:'Playfair Display'; font-style: italic; color:#9B6B1A;"></p>
-    </div>
+ <div class="mural-container">
+ <h2 class="section-title" style="font-size:2rem; margin-top: 10px;">Mural da Catarina</h2>
+ <p class="section-sub">Suba sua foto e compartilhe memórias em tempo real!</p>
+ <label class="file-input-wrapper" style="margin-bottom: 25px;">
+ 📸 Enviar Minha Foto
+ <input type="file" accept="image/*" onchange="uploadFotoMuralConvidado(this)">
+ </label>
+ <p id="upload-status" style="font-family:'Playfair Display'; font-style: italic; color:#9B6B1A; text-align:center;"></p>
+ <div class="mural-grid" id="mural-lista-fotos"></div>
+ </div>
 </div>
 
 <script src="script.js"></script>
