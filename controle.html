@@ -5,10 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Torre de Comando - 15 Anos Catarina</title>
     <link href="https://googleapis.com" rel="stylesheet">
-    
-    <!-- LINK DO SERVIDOR ALTERNATIVO - ANTI-BLOQUEIO DO WI-FI -->
     <script src="https://unpkg.com"></script>
-    
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background-color: #FDE8EF !important; font-family: 'Cinzel', serif; color: #7A4F0E; padding: 20px; }
@@ -30,7 +27,7 @@
         .photo-slot { aspect-ratio: 1; border-radius: 6px; border: 1px dashed rgba(200,150,62,0.4); background: rgba(200,150,62,0.04); display: flex; position: relative; overflow: hidden; }
         .photo-slot img { width: 100%; height: 100%; object-fit: cover; }
         .remove-btn { position: absolute; top: 4px; right: 4px; width: 22px; height: 22px; border-radius: 50%; background: rgba(180,0,0,0.8); border: none; color: #fff; font-size: 11px; cursor: pointer; z-index: 5; display: flex; align-items: center; justify-content: center; }
-        .select-desafio { width: 100%; max-width: 280px; padding: 12px; border-radius: 20px; border: 1px solid #C8963E; font-family: 'Cinzel', serif; margin-bottom: 15px; background: #fff; color: #7A4F0E; font-size: 11px; text-transform: uppercase; outline: none; }
+        .select-desafio { width: 100%; max-width: 450px; padding: 12px; border-radius: 20px; border: 1px solid #C8963E; font-family: 'Cinzel', serif; margin-bottom: 15px; background: #fff; color: #7A4F0E; font-size: 11px; text-transform: uppercase; outline: none; }
         .file-input-wrapper { background: #cd0277; color: white; padding: 12px 24px; border-radius: 25px; cursor: pointer; display: inline-block; width: 100%; max-width: 240px; font-weight: bold; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; text-align: center; border: none; box-shadow: 0 4px 10px rgba(205,2,119,0.2); }
         .file-input-wrapper input { display: none; }
         .crono-list, .convidados-list, .desafio-queue { width: 100%; display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
@@ -66,6 +63,7 @@
             <button id="btn-congelar" class="freeze-btn" onclick="toggleCongelar()">CONGELAR TELÃO: OFF</button>
         </div>
         
+        <!-- Aba 1: Comando de Momentos -->
         <div id="screen-telao-manager" class="screen active">
             <h2 class="section-title">Comando do Telão</h2>
             <p class="section-sub">Selecione o momento atual para disparar a legenda</p>
@@ -80,6 +78,7 @@
             </div>
         </div>
 
+        <!-- Aba 2: Slideshow -->
         <div id="screen-fotos" class="screen">
             <h2 class="section-title">Fotos de Crescimento</h2>
             <p class="section-sub">Suba as fotos previamente para o carrossel do jantar</p>
@@ -90,14 +89,34 @@
             </label>
         </div>
 
+        <!-- Aba 3: Lançador com as 20 Missões Oficiais -->
         <div id="screen-desafios" class="screen">
             <h2 class="section-title">Lançar Desafio</h2>
-            <p class="section-sub">Selecione o desafio, tire a foto e mande pro telão</p>
+            <p class="section-sub">Selecione a missão do envelope, tire a foto e mande pro telão</p>
+            
             <select class="select-desafio" id="admin-escolha-desafio">
-                <option value="Foto com a Debutante">Foto com a Debutante</option>
-                <option value="Foto na Mesa de Doces">Foto na Mesa de Doces</option>
-                <option value="Careta na Pista de Dança">Careta na Pista de Dança</option>
+                <option value="Envelope 1: Foto fazendo pose de modelo">Envelope 1: Foto fazendo pose de modelo</option>
+                <option value="Envelope 2: Foto com um garçom sorrindo">Envelope 2: Foto com um garçom sorrindo</option>
+                <option value="Envelope 3: Foto com o bolo da festa">Envelope 3: Foto com o bolo da festa</option>
+                <option value="Envelope 4: Foto com roupa da mesma cor">Envelope 4: Foto com roupa da mesma cor</option>
+                <option value="Envelope 5: Foto com o DJ">Envelope 5: Foto com o DJ</option>
+                <option value="Envelope 6: Foto com os pais da debutante">Envelope 6: Foto com os pais da debutante</option>
+                <option value="Envelope 7: Foto com alguém usando óculos">Envelope 7: Foto com alguém usando óculos</option>
+                <option value="Envelope 8: Alguém descansando os pés">Envelope 8: Alguém descansando os pés</option>
+                <option value="Envelope 9: Foto com a pessoa mais alta">Envelope 9: Foto com a pessoa mais alta</option>
+                <option value="Envelope 10: Foto com o doce mais bonito">Envelope 10: Foto com o doce mais bonito</option>
+                <option value="Envelope 11: Foto com alguém que não conhecia">Envelope 11: Foto com alguém que não conhecia</option>
+                <option value="Envelope 12: Foto com as luzes da festa">Envelope 12: Foto com as luzes da festa</option>
+                <option value="Envelope 13: 3 pessoas ao mesmo tempo na pista">Envelope 13: 3 pessoas ao mesmo tempo na pista</option>
+                <option value="Envelope 14: Seu parceiro(a) de dança favorito">Envelope 14: Seu parceiro(a) de dança favorito</option>
+                <option value="Envelope 15: Convidado da mesma escola">Envelope 15: Convidado da mesma escola</option>
+                <option value="Envelope 16: Foto com a lembrancinha da festa">Envelope 16: Foto com a lembrancinha da festa</option>
+                <option value="Envelope 17: Foto com a pessoa da mesa ao lado">Envelope 17: Foto com a pessoa da mesa ao lado</option>
+                <option value="Envelope 18: Símbolo de coração com as mãos">Envelope 18: Símbolo de coração com as mãos</option>
+                <option value="Envelope 19: Convidado mais animado da pista">Envelope 19: Convidado mais animado da pista</option>
+                <option value="Envelope 20: Grupo de amigos fazendo careta">Envelope 20: Grupo de amigos fazendo careta</option>
             </select>
+
             <label class="file-input-wrapper">
                 📸 Fotografar e Enviar
                 <input type="file" accept="image/*" capture="environment" onchange="uploadFotoDesafioAdmin(this)">
@@ -106,6 +125,7 @@
             <div class="desafio-queue" id="lista-desafios-stream" style="margin-top:20px;"></div>
         </div>
         
+        <!-- Aba 4: Cronograma -->
         <div id="screen-cronograma" class="screen">
             <h2 class="section-title">Cronograma</h2>
             <div class="crono-list" id="cronograma-lista"></div>
@@ -116,6 +136,7 @@
             </div>
         </div>
         
+        <!-- Aba 5: Portaria -->
         <div id="screen-convidados" class="screen">
             <h2 class="section-title">Portaria</h2>
             <div class="convidados-list" id="convidados-lista"></div>
