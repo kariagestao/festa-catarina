@@ -1,8 +1,8 @@
 const SUPABASE_URL = "https://hrqqriybcpmnsinswyop.supabase.co";
 const SUPABASE_KEY = "sb_publishable_BEGEdQzqZc2FtPrPgJPh9Q_CQMHioqM";
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-console.log(window.supabase);
+// MUDANÇA AQUI: Trocamos o nome para 'client' para não dar conflito com a biblioteca
+const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let congelado = false;
 let fotosCatAtuais = [];
@@ -43,33 +43,33 @@ async function toggleCongelar() {
     btn.classList.toggle('frozen', congelado);
   }
   try {
-    await supabase.from('config').upsert({ id: 1, congelado: congelado });
+    await client.from('config').upsert({ id: 1, congelado: congelado });
   } catch(e) { console.error(e); }
 }
 
 async function setMomento(nome) {
   try {
-    await supabase.from('config').upsert({ id: 1, momento_atual: nome });
+    await client.from('config').upsert({ id: 1, momento_atual: nome });
   } catch(e) { console.error(e); }
 }
 
 async function inicializarTelão() {
-  if (!supabase) return;
+  if (!client) return;
   try {
-    const { data: configInit } = await supabase.from('config').select('*').eq('id', 1).single();
+    const { data: configInit } = await client.from('config').select('*').eq('id', 1).single();
     if(configInit) {
       congelado = configInit.congelado;
       atualizarVisualTelao(configInit.momento_atual);
     }
   } catch(e) { console.error(e); }
   
-  supabase.channel('config-alteracoes').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'config' }, payload => {
+  client.channel('config-alteracoes').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'config' }, payload => {
     const config = payload.new;
     congelado = config.congelado;
     atualizarVisualTelao(config.momento_atual);
   }).subscribe();
 
-  supabase.channel('fotos-novas').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'fotos_desafios' }, payload => {
+  client.channel('fotos-novas').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'fotos_desafios' }, payload => {
     const novaFoto = payload.new;
     if(!congelado && novaFoto.aprovada) {
       exibirFotoDestaqueNoTelao(novaFoto.url, novaFoto.desafio);
@@ -95,7 +95,7 @@ async function atualizarVisualTelao(momento) {
     if(containerMidia) containerMidia.style.display = 'block';
     
     try {
-      const { data } = await supabase.from('fotos_catarina').select('url');
+      const { data } = await client.from('fotos_catarina').select('url');
       if(data && data.length > 0) {
         fotosCatAtuais = data.map(f => f.url);
         if(canvas) canvas.src = fotosCatAtuais[0];
@@ -144,50 +144,51 @@ function exibirFotoDestaqueNoTelao(url, legenda) {
     if (!congelado) atualizarVisualTelao(momentoGlobal);
   }, 8000);
 }
+
 async function uploadFotoCat(input) {
-  if (!input.files || input.files.length === 0 || !supabase) return;
+  if (!input.files || input.files.length === 0 || !client) return;
   const file = input.files[0];
   const fileName = `cat_${Date.now()}_${file.name}`;
-  const { data, error } = await supabase.storage.from('festa-cat').upload(fileName, file);
+  const { data, error } = await client.storage.from('festa-cat').upload(fileName, file);
   if (error) return alert('Erro no upload: ' + error.message);
-  const { data: urlData } = supabase.storage.from('festa-cat').getPublicUrl(fileName);
-  await supabase.from('fotos_catarina').insert({ url: urlData.publicUrl });
+  const { data: urlData } = client.storage.from('festa-cat').getPublicUrl(fileName);
+  await client.from('fotos_catarina').insert({ url: urlData.publicUrl });
   carregarFotosCatControle();
 }
 
 async function uploadFotoDesafioAdmin(input) {
-  if (!input.files || input.files.length === 0 || !supabase) return;
+  if (!input.files || input.files.length === 0 || !client) return;
   const status = document.getElementById('admin-upload-status');
   if(status) status.innerText = "Enviando desafio para o telão... ";
   const file = input.files[0];
   const desafio = document.getElementById('admin-escolha-desafio').value;
   const fileName = `admin_desafio_${Date.now()}_${file.name}`;
-  const { data, error } = await supabase.storage.from('desafios-festa').upload(fileName, file);
+  const { data, error } = await client.storage.from('desafios-festa').upload(fileName, file);
   if(error) { if(status) status.innerText = "Erro ao enviar. Tente novamente!"; return; }
-  const { data: urlData } = supabase.storage.from('desafios-festa').getPublicUrl(fileName);
-  await supabase.from('fotos_desafios').insert({ url: urlData.publicUrl, desafio: desafio, aprovada: true });
+  const { data: urlData } = client.storage.from('desafios-festa').getPublicUrl(fileName);
+  await client.from('fotos_desafios').insert({ url: urlData.publicUrl, desafio: desafio, aprovada: true });
   if(status) status.innerText = "Desafio enviado com sucesso para o telão!";
   setTimeout(() => { if(status) status.innerText = ""; }, 3000);
 }
 
 async function uploadFotoMuralConvidado(input) {
-  if (!input.files || input.files.length === 0 || !supabase) return;
+  if (!input.files || input.files.length === 0 || !client) return;
   const status = document.getElementById('upload-status');
   if(status) status.innerText = "Publicando no mural... ";
   const file = input.files[0];
   const fileName = `guest_mural_${Date.now()}_${file.name}`;
-  const { data, error } = await supabase.storage.from('desafios-festa').upload(fileName, file);
+  const { data, error } = await client.storage.from('desafios-festa').upload(fileName, file);
   if(error) { if(status) status.innerText = "Erro ao publicar. Tente novamente!"; return; }
-  const { data: urlData } = supabase.storage.from('desafios-festa').getPublicUrl(fileName);
-  await supabase.from('memorias').insert({ url: urlData.publicUrl });
+  const { data: urlData } = client.storage.from('desafios-festa').getPublicUrl(fileName);
+  await client.from('memorias').insert({ url: urlData.publicUrl });
   if(status) status.innerText = "Sua foto foi para o Mural de Memórias! ✨";
   setTimeout(() => { if(status) status.innerText = ""; }, 3000);
 }
 
 async function carregarFotosMural() {
-  if(!supabase) return;
+  if(!client) return;
   try {
-    const { data } = await supabase.from('memorias').select('*').order('created_at', { ascending: false });
+    const { data } = await client.from('memorias').select('*').order('created_at', { ascending: false });
     const lista = document.getElementById('mural-lista-fotos');
     if(lista && data) {
       lista.innerHTML = '';
@@ -199,8 +200,8 @@ async function carregarFotosMural() {
 }
 
 function ouvirNovasFotosMural() {
-  if(!supabase) return;
-  supabase.channel('mural-stream').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'memorias' }, payload => {
+  if(!client) return;
+  client.channel('mural-stream').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'memorias' }, payload => {
     const post = payload.new;
     const lista = document.getElementById('mural-lista-fotos');
     if(lista) {
@@ -210,8 +211,8 @@ function ouvirNovasFotosMural() {
 }
 
 async function removerFotoCat(id) {
-  if(!supabase) return;
-  await supabase.from('fotos_catarina').delete().eq('id', id);
+  if(!client) return;
+  await client.from('fotos_catarina').delete().eq('id', id);
   carregarFotosCatControle();
 }
 
@@ -223,9 +224,9 @@ async function carregarDadosControle() {
 }
 
 async function carregarFotosCatControle() {
-  if(!supabase) return;
+  if(!client) return;
   try {
-    const { data } = await supabase.from('fotos_catarina').select('*');
+    const { data } = await client.from('fotos_catarina').select('*');
     const grid = document.getElementById('grid-fotos-cat');
     if(grid && data) {
       grid.innerHTML = '';
@@ -237,9 +238,9 @@ async function carregarFotosCatControle() {
 }
 
 async function carregarCronograma() {
-  if(!supabase) return;
+  if(!client) return;
   try {
-    const { data } = await supabase.from('cronograma').select('*').order('hora');
+    const { data } = await client.from('cronograma').select('*').order('hora');
     const lista = document.getElementById('cronograma-lista');
     if(lista && data) {
       lista.innerHTML = '';
@@ -253,23 +254,23 @@ async function carregarCronograma() {
 async function adicionarCronograma() {
   const hora = document.getElementById('crono-novo-horario').value;
   const texto = document.getElementById('crono-novo-texto').value;
-  if(!hora || !texto || !supabase) return;
-  await supabase.from('cronograma').insert({ hora, texto, concluido: false });
+  if(!hora || !texto || !client) return;
+  await client.from('cronograma').insert({ hora, texto, concluido: false });
   document.getElementById('crono-novo-horario').value = '';
   document.getElementById('crono-novo-texto').value = '';
   carregarCronograma();
 }
 
 async function toggleCrono(id, status) {
-  if(!supabase) return;
-  await supabase.from('cronograma').update({ concluido: !status }).eq('id', id);
+  if(!client) return;
+  await client.from('cronograma').update({ concluido: !status }).eq('id', id);
   carregarCronograma();
 }
 
 async function carregarConvidados() {
-  if(!supabase) return;
+  if(!client) return;
   try {
-    const { data } = await supabase.from('convidados').select('*').order('nome');
+    const { data } = await client.from('convidados').select('*').order('nome');
     const lista = document.getElementById('convidados-lista');
     let presentes = 0;
     if(lista && data) {
@@ -281,42 +282,3 @@ async function carregarConvidados() {
     }
     const contador = document.getElementById('conv-contador');
     if(contador) contador.innerText = `Presentes: ${presentes} | Total: ${data ? data.length : 0}`;
-  } catch(e) { console.error(e); }
-}
-
-async function adicionarConvidado() {
-  const nome = document.getElementById('conv-novo-nome').value;
-  if(!nome || !supabase) return;
-  await supabase.from('convidados').insert({ nome, presente: false });
-  document.getElementById('conv-novo-nome').value = '';
-  carregarConvidados();
-}
-
-async function togglePresenca(id, status) {
-  if(!supabase) return;
-  await supabase.from('convidados').update({ presente: !status }).eq('id', id);
-  carregarConvidados();
-}
-
-async function deletarConvidado(id) {
-  if(!supabase) return;
-  await supabase.from('convidados').delete().eq('id', id);
-  carregarConvidados();
-}
-
-function ouvirFotosDosConvidados() {
-  const lista = document.getElementById('lista-desafios-stream');
-  if(!supabase) return;
-  supabase.channel('stream-controle').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'fotos_desafios' }, payload => {
-    const f = payload.new;
-    if(lista) {
-      lista.innerHTML = `<div class="desafio-item"><img src="${f.url}" class="desafio-thumb"><div class="desafio-text"><b>${f.desafio}</b> enviado agora!</div></div>` + lista.innerHTML;
-    }
-  }).subscribe();
-}
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', inicializarSistemaPorPagina);
-} else {
-  inicializarSistemaPorPagina();
-}
