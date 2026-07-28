@@ -1,5 +1,5 @@
 const SUPABASE_URL = 'https://supabase.co';
-const SUPABASE_KEY = 'sb_publishable_BEGEdQzqZc2FtPrPgJPh9Q_CQMHioqM';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhycXFyaXliY3BtbnNpbnN3eW9wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyMDg0NDgsImV4cCI6MjEwMDc4NDQ0OH0.XVwD1ItWJQ8HU6Ib_1NNVrEGcQF1g_1tbgqq5ufQ9xk';
 const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
 let modoAtual = 'telao'; 
@@ -174,7 +174,6 @@ async function inicializarTelão() {
     supabase.channel('config-alteracoes').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'config' }, payload => {
         const config = payload.new;
         congelado = config.congelado;
-        if (congelado) return;
         atualizarVisualTelao(config.momento_atual);
     }).subscribe();
 
@@ -272,4 +271,5 @@ function ouvirFotosDosConvidados() {
     }).subscribe();
 }
 
-window.onload = initializeRoteamento; // Garante o mapeamento inicial corrigido
+// CORREÇÃO DO CLAUDE: Nome batendo exatamente com a declaração da linha 13
+window.onload = inicializarRoteamento;
