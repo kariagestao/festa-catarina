@@ -165,7 +165,7 @@ function exibirFotoDestaqueNoTelao(url, legenda) {
   const canvas = document.getElementById('telao-canvas');
   const containerMidia = document.getElementById('telao-container-midia');
   const badge = document.getElementById('telao-subtitulo');
-  const arteFundoReal = document.getElementById('arte-fundo-real') || document.getElementById('telao-arte-fundo-real');
+  const arteFundoReal = document.getElementById('telao-arte-fundo-real');
   
   if (arteFundoReal) arteFundoReal.style.display = 'none';
   if(containerMidia) containerMidia.style.display = 'block';
@@ -180,7 +180,6 @@ function exibirFotoDestaqueNoTelao(url, legenda) {
   }, 8000);
 }
 
-// Uploads
 async function uploadFotoCat(input) {
   if (!input.files || input.files.length === 0 || !client) return;
   const file = input.files[0];
@@ -222,7 +221,6 @@ async function uploadFotoMuralConvidado(input) {
   setTimeout(() => { if(status) status.innerText = ""; }, 3000);
 }
 
-// Mural de Memórias Interativo (Grade)
 async function carregarFotosMural() {
   if(!client) return;
   try {
@@ -312,7 +310,6 @@ async function carregarFotosDesafiosControle() {
   } catch(e) { console.error(e); }
 }
 
-// Cronograma com Título, Texto Longo e Exclusão
 async function carregarCronograma() {
   if(!client) return;
   try {
@@ -400,7 +397,6 @@ async function deletarConvidado(id) {
 }
 
 function ouvirFotosDosConvidados() {
-  const lista = document.getElementById('lista-desafios-stream');
   if(!client) return;
   client.channel('stream-controle').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'fotos_desafios' }, payload => {
     carregarFotosDesafiosControle();
