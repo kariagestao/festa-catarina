@@ -1,4 +1,4 @@
-const SUPABASE_URL = 'https://hrqqryibcpmnsinswyop.supabase.co';
+const SUPABASE_URL = 'https://supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhycXFyaXliY3BtbnNpbnN3eW9wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2NDE0MTEsImV4cCI6MjEwMDc4NDQ0OH0.IasE0zT3L58GAnE0S8rRThf4hC1Lz8S9jF1R8vX9zWk';
 const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
@@ -8,6 +8,7 @@ let slideIndex = 0;
 let momentoGlobal = 'RECEPÇÃO DOS CONVIDADOS';
 let intervaloSlide = null;
 
+// DETECTOR DE PÁGINAS SEGURO (Procura os elementos reais de cada tela)
 function inicializarSistemaPorPagina() {
   const testePainelControle = document.getElementById('grid-fotos-cat');
   const testeMuralConvidado = document.getElementById('mural-lista-fotos');
@@ -91,7 +92,7 @@ async function atualizarVisualTelao(momento) {
     const { data } = await supabase.from('fotos_catarina').select('url');
     if(data && data.length > 0) {
       fotosCatAtuais = data.map(f => f.url);
-      if(canvas) canvas.src = fotosCatAtuais;
+      if(canvas) canvas.src = fotosCatAtuais[0];
       slideIndex = 0;
       rodarSlideshow();
     } else {
@@ -138,7 +139,7 @@ function exibirFotoDestaqueNoTelao(url, legenda) {
 }
 async function uploadFotoCat(input) {
   if (!input.files || input.files.length === 0 || !supabase) return;
-  const file = input.files;
+  const file = input.files[0];
   const fileName = `cat_${Date.now()}_${file.name}`;
   const { data, error } = await supabase.storage.from('festa-cat').upload(fileName, file);
   if (error) return alert('Erro no upload: ' + error.message);
@@ -151,7 +152,7 @@ async function uploadFotoDesafioAdmin(input) {
   if (!input.files || input.files.length === 0 || !supabase) return;
   const status = document.getElementById('admin-upload-status');
   if(status) status.innerText = "Enviando desafio para o telão... ";
-  const file = input.files;
+  const file = input.files[0];
   const desafio = document.getElementById('admin-escolha-desafio').value;
   const fileName = `admin_desafio_${Date.now()}_${file.name}`;
   const { data, error } = await supabase.storage.from('desafios-festa').upload(fileName, file);
@@ -166,7 +167,7 @@ async function uploadFotoMuralConvidado(input) {
   if (!input.files || input.files.length === 0 || !supabase) return;
   const status = document.getElementById('upload-status');
   if(status) status.innerText = "Publicando no mural... ";
-  const file = input.files;
+  const file = input.files[0];
   const fileName = `guest_mural_${Date.now()}_${file.name}`;
   const { data, error } = await supabase.storage.from('desafios-festa').upload(fileName, file);
   if(error) { if(status) status.innerText = "Erro ao publicar. Tente novamente!"; return; }
@@ -294,7 +295,7 @@ function ouvirFotosDosConvidados() {
   }).subscribe();
 }
 
-// PROTEÇÃO EXTRA: Garante a inicialização somente após o DOM e o Supabase estarem totalmente prontos
+// Inicialização com barreira protetora
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', inicializarSistemaPorPagina);
 } else {
