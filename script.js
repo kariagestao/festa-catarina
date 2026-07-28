@@ -77,7 +77,6 @@ async function inicializarTelão() {
 
   client.channel('fotos-novas').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'fotos_desafios' }, payload => {
     const novaFoto = payload.new;
-    // Ouve novas fotos em tempo real apenas se estiver na recepção ou em momentos livres
     if(!congelado && novaFoto.aprovada) {
       if (momentoGlobal === 'RECEPÇÃO DOS CONVIDADOS' || (!momentoGlobal.includes('SLIDESHOW'))) {
         exibirFotoDestaqueNoTelao(novaFoto.url, novaFoto.desafio);
@@ -102,7 +101,7 @@ async function atualizarVisualTelao(momento) {
     if (arteFundoReal) { arteFundoReal.src = "arte-festa.jpg"; arteFundoReal.style.display = 'block'; }
   } else if (momento === 'SLIDESHOW DA CATARINA') {
     if (arteFundoReal) arteFundoReal.style.display = 'none';
-    if(badge) badge.style.display = 'none'; // Slideshow puro da Cat sem legenda
+    if(badge) badge.style.display = 'none';
     if(containerMidia) containerMidia.style.display = 'block';
     
     try {
@@ -124,10 +123,9 @@ async function atualizarVisualTelao(momento) {
     try {
       const { data } = await client.from('fotos_desafios').select('url, desafio').eq('aprovada', true);
       if(data && data.length > 0) {
-        fotosDesafiosAtuais = data; // Armazena objetos com url e desafio
+        fotosDesafiosAtuais = data;
         if(canvas) canvas.src = fotosDesafiosAtuais[0].url;
         
-        // Exibe a legenda com o nome do desafio correspondente à foto
         if(badge) {
           badge.style.display = 'flex';
           badge.innerText = `DESAFIO: ${fotosDesafiosAtuais[0].desafio.toUpperCase()}`;
@@ -142,7 +140,6 @@ async function atualizarVisualTelao(momento) {
       }
     } catch(e) { console.error(e); }
   } else {
-    // Demais momentos fixos (Ex: Abertura de Pista, Parabéns e Bolo, etc.)
     if(containerMidia) containerMidia.style.display = 'none';
     if (arteFundoReal) { arteFundoReal.src = "arte-festa.jpg"; arteFundoReal.style.display = 'block'; }
     if(badge) {
@@ -316,24 +313,27 @@ async function carregarFotosDesafiosControle() {
   } catch(e) { console.error(e); }
 }
 
+// CRONOGRAMA ORDENADO POR HORÁRIO E COM CHECKLIST PERSISTENTE
 async function carregarCronograma() {
   if(!client) return;
   try {
-    const { data } = await client.from('cronograma').select('*').order('hora');
+    // Ordena de forma crescente pelo horário (ex: 19:00, 20:30, 22:00)
+    const { data } = await client.from('cronograma').select('*').order('hora', { ascending: true });
     const lista = document.getElementById('cronograma-lista');
     if(lista && data) {
       lista.innerHTML = '';
       data.forEach(item => {
+        const isDone = item.concluido ? true : false;
         lista.innerHTML += `
-          <div class="crono-item ${item.concluido ? 'done' : ''}">
+          <div class="crono-item ${isDone ? 'done' : ''}" style="background:#ffffff; padding:14px 18px; border-radius:16px; border:1px solid rgba(200,150,62,0.3); margin-bottom:10px; box-shadow:0 2px 8px rgba(0,0,0,0.02); transition: all 0.3s;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
-              <b style="font-family:'Cinzel'; font-size:1rem; color:#cd0277;">${item.hora} - ${item.titulo || 'Momento'}</b>
+              <b style="font-family:'Cinzel'; font-size:1.05rem; color:#cd0277; ${isDone ? 'text-decoration: line-through; opacity: 0.6;' : ''}">${item.hora} - ${item.titulo || 'Momento'}</b>
               <div>
-                <button onclick="toggleCrono('${item.id}', ${item.concluido})" style="background:#28a745; color:white; border:none; padding:4px 10px; border-radius:10px; font-size:11px; cursor:pointer; margin-right:5px;">✓ Feito</button>
-                <button onclick="deletarCronograma('${item.id}')" style="background:none; border:none; color:#cd0277; font-size:14px; cursor:pointer; padding:4px;">✕</button>
+                <button onclick="toggleCrono('${item.id}', ${isDone})" style="background:${isDone ? '#6c757d' : '#28a745'}; color:white; border:none; padding:6px 12px; border-radius:12px; font-size:12px; cursor:pointer; margin-right:6px; font-weight:600;">${isDone ? 'Desfazer' : '✓ Feito'}</button>
+                <button onclick="deletarCronograma('${item.id}')" style="background:none; border:none; color:#cd0277; font-size:15px; cursor:pointer; padding:4px;">✕</button>
               </div>
             </div>
-            <p style="margin-top:8px; font-family:'Playfair Display'; font-size:0.95rem; color:#7A4F0E; white-space:pre-wrap;">${item.texto || ''}</p>
+            <p style="margin-top:8px; font-family:'Playfair Display'; font-size:0.95rem; color:#7A4F0E; white-space:pre-wrap; ${isDone ? 'text-decoration: line-through; opacity: 0.5;' : ''}">${item.texto || ''}</p>
           </div>`;
       });
     }
@@ -342,21 +342,31 @@ async function carregarCronograma() {
 
 async function adicionarCronograma() {
   const hora = document.getElementById('crono-novo-horario').value;
-  const titulo = document.getElementById('crono-novo-titulo') ? document.getElementById('crono-novo-titulo').value : '';
+  const tituloEl = document.getElementById('crono-novo-titulo');
+  const titulo = tituloEl ? tituloEl.value : '';
   const texto = document.getElementById('crono-novo-texto').value;
   if(!hora || !client) return;
   
-  await client.from('cronograma').insert({ hora, titulo, texto, concluido: false });
+  const { error } = await client.from('cronograma').insert({ hora, titulo, texto, concluido: false });
+  if(error) {
+    alert("Erro ao adicionar no cronograma: " + error.message);
+    return;
+  }
   
-  if(document.getElementById('crono-novo-titulo')) document.getElementById('crono-novo-titulo').value = '';
+  if(tituloEl) tituloEl.value = '';
   document.getElementById('crono-novo-horario').value = '';
   document.getElementById('crono-novo-texto').value = '';
   carregarCronograma();
 }
 
-async function toggleCrono(id, status) {
+async function toggleCrono(id, statusAtual) {
   if(!client) return;
-  await client.from('cronograma').update({ concluido: !status }).eq('id', id);
+  const novoStatus = !statusAtual;
+  const { error } = await client.from('cronograma').update({ concluido: novoStatus }).eq('id', id);
+  if(error) {
+    alert("Erro ao atualizar status: " + error.message);
+    return;
+  }
   carregarCronograma();
 }
 
