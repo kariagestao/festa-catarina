@@ -8,6 +8,42 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
+        /* Organiza a caixa de adicionar no cronograma */
+  .crono-add {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 500px;
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    margin-top: 20px;
+  }
+  .crono-add input, 
+  .crono-add textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 15px;
+    font-family: inherit;
+    box-sizing: border-box;
+  }
+  .crono-add textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+  .crono-add button {
+    background-color: #b76e79;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+  }
         body { background-color: #FDE8EF !important; font-family: 'Cinzel', serif; color: #7A4F0E; padding: 20px; }
         #controls { display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 600px; margin: 0 auto; text-align: center; }
         .mode-nav { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; justify-content: center; width: 100%; }
