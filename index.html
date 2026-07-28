@@ -40,8 +40,13 @@ body { background:#cd0277; min-height:100vh; font-family:Cinzel,serif; color: #7
 .telao-badge-momento { display: none; background: #ffffff; border: 1px solid rgba(200,150,62,0.4); padding: 14px 40px; border-radius: 30px; font-family: Cinzel, serif; font-size: 1.4rem; letter-spacing: 0.15em; color: #cd0277; align-items: center; gap: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); z-index: 5; text-transform: uppercase; }
 .telao-badge-momento::before, .telao-badge-momento::after { content: "✦"; color: #cd0277; font-size: 1.1rem; }
 
-/* ================= DESIGN PROFISSONAL DA TORRE DE COMANDO (LIMPO E SEM IMAGEM DE FUNDO) ================= */
-#view-controle { background: #FDE8EF !important; } /* Força o fundo a ser rosa claro para leitura na portaria */
+/* ================= DESIGN DA TORRE DE COMANDO (TOTALMENTE LIMPO E SEM IMAGENS) ================= */
+#view-controle { 
+    background-color: #FDE8EF !important; /* Força o fundo claro na tela inteira do controle */
+    background-image: none !important;    /* Garante que NENHUMA imagem de fundo vaze para cá */
+    min-height: 100vh;
+    width: 100%;
+} 
 #controls { display:flex; flex-direction:column; align-items:center; padding:24px; min-height:100vh; text-align: center; width: 100%; }
 .mode-nav, .moment-btns { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; justify-content:center; width: 100%; max-width: 800px; }
 .mode-btn, .moment-btn { background:#ffffff; border:1px solid rgba(200,150,62,0.5); color:#9B6B1A; padding:10px 20px; border-radius:20px; font-family:Cinzel,serif; font-size:12px; cursor:pointer; letter-spacing:0.05em; transition:all 0.3s; text-transform: uppercase; font-weight: 600; }
@@ -49,7 +54,7 @@ body { background:#cd0277; min-height:100vh; font-family:Cinzel,serif; color: #7
 .freeze-bar { display:flex; justify-content:center; margin-bottom:20px; width: 100%; }
 .freeze-btn { background:#ffffff; border:1px solid rgba(210,3,119,0.4); color:#cd0277; padding:10px 24px; border-radius:20px; font-family:Cinzel,serif; font-size:12px; cursor:pointer; letter-spacing:0.08em; transition:all 0.3s; text-transform: uppercase; font-weight: bold; }
 .freeze-btn.frozen { background:#cd0277; color:#ffffff; }
-.screen { display:none; flex-direction:column; align-items:center; text-align:center; width:100%; background: #FDE8EF; }
+.screen { display:none; flex-direction:column; align-items:center; text-align:center; width:100%; background: #FDE8EF !important; background-image: none !important; }
 .screen.active { display:flex; }
 .section-title { font-family:Cinzel,serif; font-size:1.8rem; color:#cd0277; font-weight:600; margin-bottom:0.4rem; letter-spacing: 0.05em; }
 .section-sub { font-family:'Playfair Display',serif; font-style:italic; font-size:1.1rem; color:#9B6B1A; margin-bottom:1.5rem; }
@@ -176,5 +181,3 @@ body { background:#cd0277; min-height:100vh; font-family:Cinzel,serif; color: #7
 <script src="script.js"></script>
 </body>
 </html>
-
-
