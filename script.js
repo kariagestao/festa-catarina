@@ -77,8 +77,11 @@ async function inicializarTelão() {
 
   client.channel('fotos-novas').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'fotos_desafios' }, payload => {
     const novaFoto = payload.new;
+    // Ouve novas fotos em tempo real apenas se estiver na recepção ou em momentos livres
     if(!congelado && novaFoto.aprovada) {
-      exibirFotoDestaqueNoTelao(novaFoto.url, novaFoto.desafio);
+      if (momentoGlobal === 'RECEPÇÃO DOS CONVIDADOS' || (!momentoGlobal.includes('SLIDESHOW'))) {
+        exibirFotoDestaqueNoTelao(novaFoto.url, novaFoto.desafio);
+      }
     }
   }).subscribe();
 }
@@ -99,7 +102,7 @@ async function atualizarVisualTelao(momento) {
     if (arteFundoReal) { arteFundoReal.src = "arte-festa.jpg"; arteFundoReal.style.display = 'block'; }
   } else if (momento === 'SLIDESHOW DA CATARINA') {
     if (arteFundoReal) arteFundoReal.style.display = 'none';
-    if(badge) badge.style.display = 'none';
+    if(badge) badge.style.display = 'none'; // Slideshow puro da Cat sem legenda
     if(containerMidia) containerMidia.style.display = 'block';
     
     try {
@@ -116,22 +119,30 @@ async function atualizarVisualTelao(momento) {
     } catch(e) { console.error(e); }
   } else if (momento === 'SLIDESHOW DOS DESAFIOS') {
     if (arteFundoReal) arteFundoReal.style.display = 'none';
-    if(badge) badge.style.display = 'none';
     if(containerMidia) containerMidia.style.display = 'block';
     
     try {
-      const { data } = await client.from('fotos_desafios').select('url').eq('aprovada', true);
+      const { data } = await client.from('fotos_desafios').select('url, desafio').eq('aprovada', true);
       if(data && data.length > 0) {
-        fotosDesafiosAtuais = data.map(f => f.url);
-        if(canvas) canvas.src = fotosDesafiosAtuais[0];
+        fotosDesafiosAtuais = data; // Armazena objetos com url e desafio
+        if(canvas) canvas.src = fotosDesafiosAtuais[0].url;
+        
+        // Exibe a legenda com o nome do desafio correspondente à foto
+        if(badge) {
+          badge.style.display = 'flex';
+          badge.innerText = `DESAFIO: ${fotosDesafiosAtuais[0].desafio.toUpperCase()}`;
+        }
+        
         slideIndexDesafio = 0;
         rodarSlideshowDesafios();
       } else {
         if(containerMidia) containerMidia.style.display = 'none';
+        if(badge) badge.style.display = 'none';
         if (arteFundoReal) { arteFundoReal.src = "arte-festa.jpg"; arteFundoReal.style.display = 'block'; }
       }
     } catch(e) { console.error(e); }
   } else {
+    // Demais momentos fixos (Ex: Abertura de Pista, Parabéns e Bolo, etc.)
     if(containerMidia) containerMidia.style.display = 'none';
     if (arteFundoReal) { arteFundoReal.src = "arte-festa.jpg"; arteFundoReal.style.display = 'block'; }
     if(badge) {
@@ -154,8 +165,16 @@ function rodarSlideshowDesafios() {
   intervaloSlideDesafio = setInterval(() => {
     if(congelado || fotosDesafiosAtuais.length === 0) return;
     slideIndexDesafio = (slideIndexDesafio + 1) % fotosDesafiosAtuais.length;
+    const itemAtual = fotosDesafiosAtuais[slideIndexDesafio];
+    
     const canvas = document.getElementById('telao-canvas');
-    if(canvas) canvas.src = fotosDesafiosAtuais[slideIndexDesafio];
+    if(canvas) canvas.src = itemAtual.url;
+
+    const badge = document.getElementById('telao-subtitulo');
+    if(badge && itemAtual.desafio) {
+      badge.style.display = 'flex';
+      badge.innerText = `DESAFIO: ${itemAtual.desafio.toUpperCase()}`;
+    }
   }, 5000);
 }
 
