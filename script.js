@@ -1,8 +1,10 @@
-const SUPABASE_URL = 'https://supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhycXFyaXliY3BtbnNpbnN3eW9wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2NDE0MTEsImV4cCI6MjEwMDc4NDQ0OH0.IasE0zT3L58GAnE0S8rRThf4hC1Lz8S9jF1R8vX9zWk';
+const SUPABASE_URL = "https://hrqqriybcpmnsinswyop.supabase.co";
+const SUPABASE_KEY = "sb_publishable_BEGEdQzqZc2FtPrPgJPh9Q_CQMHioqM";
 
-// Inicialização sem o 'window.' para garantir leitura imediata da biblioteca do unpkg
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabase = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
 
 let congelado = false;
 let fotosCatAtuais = [];
