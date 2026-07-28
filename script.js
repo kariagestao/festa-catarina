@@ -49,7 +49,7 @@ async function setMomento(nome) {
 
 async function uploadFotoCat(input) {
     if (!input.files || input.files.length === 0 || !supabase) return;
-    const file = input.files;
+    const file = input.files[0];
     const fileName = `cat_${Date.now()}_${file.name}`;
     const { data, error } = await supabase.storage.from('festa-cat').upload(fileName, file);
     if (error) return alert('Erro no upload: ' + error.message);
@@ -191,30 +191,41 @@ async function atualizarVisualTelao(momento) {
     const badge = document.getElementById('telao-subtitulo');
     const canvas = document.getElementById('telao-canvas');
     const containerMidia = document.getElementById('telao-container-midia');
+    const arteFundoReal = document.getElementById('telao-arte-fundo-real');
 
     clearInterval(intervaloSlide);
 
-    // Oculta a plaquinha branca na recepção inicial
     if (momento === 'RECEPÇÃO DOS CONVIDADOS') {
         badge.style.display = 'none';
         containerMidia.style.display = 'none';
+        if (arteFundoReal) {
+            arteFundoReal.src = "arte-festa.jpg";
+            arteFundoReal.style.display = 'block';
+        }
     } else if (momento === 'Só a Arte') {
-        // Modo Carrossel/Slideshow ativado em tela cheia
+        if (arteFundoReal) arteFundoReal.style.display = 'none';
         badge.style.display = 'none';
         containerMidia.style.display = 'block';
         
         const { data } = await supabase.from('fotos_catarina').select('url');
         if(data && data.length > 0) {
             fotosCatAtuais = data.map(f => f.url);
-            canvas.src = fotosCatAtuais[0];
+            canvas.src = fotosCatAtuais;
             slideIndex = 0;
             rodarSlideshow();
         } else {
             containerMidia.style.display = 'none';
+            if (arteFundoReal) {
+                arteFundoReal.src = "arte-festa.jpg";
+                arteFundoReal.style.display = 'block';
+            }
         }
     } else {
-        // Exibe a arte de fundo limpa + a plaquinha com a legenda em CAIXA ALTA
         containerMidia.style.display = 'none';
+        if (arteFundoReal) {
+            arteFundoReal.src = "arte-festa.jpg";
+            arteFundoReal.style.display = 'block';
+        }
         badge.style.display = 'flex';
         badge.innerText = momento.toUpperCase();
     }
@@ -233,7 +244,9 @@ function exibirFotoDestaqueNoTelao(url, legenda) {
     const canvas = document.getElementById('telao-canvas');
     const containerMidia = document.getElementById('telao-container-midia');
     const badge = document.getElementById('telao-subtitulo');
+    const arteFundoReal = document.getElementById('telao-arte-fundo-real');
     
+    if (arteFundoReal) arteFundoReal.style.display = 'none';
     containerMidia.style.display = 'block';
     canvas.src = url;
     
@@ -247,7 +260,7 @@ function exibirFotoDestaqueNoTelao(url, legenda) {
 
 function ouvirFotosDosConvidados() {
     const lista = document.getElementById('lista-desafios-stream');
-    supabase.channel('stream-controle').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'fotos_desafios' }, payload => {
+    supabase.channel('stream-controle').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'festa-cat' }, payload => {
         const f = payload.new;
         if(lista) lista.innerHTML = `<div class="desafio-item"><img src="${f.url}" class="desafio-thumb"><div class="desafio-text"><b>${f.desafio}</b> enviado agora!</div></div>` + lista.innerHTML;
     }).subscribe();
