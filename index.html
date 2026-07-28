@@ -8,17 +8,17 @@
 <script src="https://jsdelivr.net"></script>
 <style>
 * { box-sizing:border-box; margin:0; padding:0; }
-body { background:#FDE8EF; min-height:100vh; font-family:Cinzel,serif; color: #7A4F0E; overflow-x: hidden; }
+body { background:#c3135c; min-height:100vh; font-family:Cinzel,serif; color: #7A4F0E; overflow-x: hidden; }
 .view-mode { display: none; width: 100%; min-height: 100vh; }
 .view-mode.active { display: block; }
 
-/* ================= DESIGN IDENTIDADE VISUAL DO TELÃO (TOM DE PINK AJUSTADO) ================= */
+/* ================= DESIGN IDENTIDADE VISUAL DO TELÃO (MÁXIMA COMPATIBILIDADE) ================= */
 #view-telao { 
-    background: #c3135c; /* Tom exato de pink escuro/magenta da sua arte para sumir com as linhas */
-    background-image: url('https://supabase.co');
-    background-size: contain; 
-    background-position: center;
-    background-repeat: no-repeat;
+    background-color: #c3135c !important; 
+    background-image: url("https://supabase.co") !important;
+    background-size: contain !important; 
+    background-position: center center !important;
+    background-repeat: no-repeat !important;
     width: 100vw; 
     height: 100vh; 
     overflow: hidden; 
@@ -35,7 +35,7 @@ body { background:#FDE8EF; min-height:100vh; font-family:Cinzel,serif; color: #7
 .telao-badge-momento::before, .telao-badge-momento::after { content: "✦"; color: #C00060; font-size: 1.1rem; }
 
 /* ================= DESIGN DA TORRE DE COMANDO E COMPONENTES ================= */
-#controls { display:flex; flex-direction:column; align-items:center; padding:24px; min-height:100vh; text-align: center; }
+#controls { display:flex; flex-direction:column; align-items:center; padding:24px; min-height:100vh; text-align: center; background:#FDE8EF; }
 .mode-nav, .moment-btns { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; justify-content:center; width: 100%; max-width: 800px; }
 .mode-btn, .moment-btn { background:transparent; border:1px solid rgba(200,150,62,0.5); color:#9B6B1A; padding:8px 18px; border-radius:20px; font-family:Cinzel,serif; font-size:11px; cursor:pointer; letter-spacing:0.05em; transition:all 0.3s; text-transform: uppercase; }
 .mode-btn:hover, .mode-btn.active, .moment-btn:hover, .moment-btn.active { background:rgba(200,150,62,0.15); border-color:#C8963E; color:#7A4F0E; box-shadow: 0 2px 8px rgba(200,150,62,0.1); }
@@ -64,7 +64,7 @@ body { background:#FDE8EF; min-height:100vh; font-family:Cinzel,serif; color: #7
 .action-btn { background:rgba(192,0,96,0.05); border:1px solid rgba(192,0,96,0.3); color:#C00060; padding:8px 22px; border-radius:24px; font-family:Cinzel,serif; font-size:11px; cursor:pointer; font-weight: 600; }
 .conv-del { background:none; border:none; color:rgba(180,0,0,0.5); font-size:14px; cursor:pointer; padding: 0 4px; }
 .desafio-thumb { width:46px; height:46px; border-radius:4px; object-fit:cover; border:1px solid rgba(200,150,62,0.3); }
-.guest-container { padding: 30px 20px; text-align: center; max-width: 480px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; }
+.guest-container { padding: 30px 20px; text-align: center; max-width: 480px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; background: #FDE8EF; min-height: 100vh; }
 .select-desafio { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #C8963E; font-family: Cinzel, serif; margin-bottom: 15px; background: #fff; color: #7A4F0E; outline: none; }
 .file-input-wrapper { background: #C00060; color: white; padding: 12px 24px; border-radius: 25px; cursor: pointer; display: inline-block; width: 100%; max-width: 280px; font-weight: bold; margin-top: 10px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; border: none; text-align: center; }
 .file-input-wrapper input { display: none; }
