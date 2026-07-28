@@ -5,9 +5,12 @@ const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let congelado = false;
 let fotosCatAtuais = [];
-let slideIndex = 0;
+let fotosDesafiosAtuais = [];
+let slideIndexCat = 0;
+let slideIndexDesafio = 0;
 let momentoGlobal = 'RECEPÇÃO DOS CONVIDADOS';
-let intervaloSlide = null;
+let intervaloSlideCat = null;
+let intervaloSlideDesafio = null;
 
 function inicializarSistemaPorPagina() {
   const testePainelControle = document.getElementById('grid-fotos-cat');
@@ -47,6 +50,10 @@ async function toggleCongelar() {
 }
 
 async function setMomento(nome) {
+  if (congelado) {
+    alert("O telão está CONGELADO! Descongele para alterar o momento.");
+    return;
+  }
   try {
     await client.from('config').upsert({ id: 1, momento_atual: nome });
   } catch(e) { console.error(e); }
@@ -82,7 +89,9 @@ async function atualizarVisualTelao(momento) {
   const canvas = document.getElementById('telao-canvas');
   const containerMidia = document.getElementById('telao-container-midia');
   const arteFundoReal = document.getElementById('telao-arte-fundo-real');
-  clearInterval(intervaloSlide);
+  
+  clearInterval(intervaloSlideCat);
+  clearInterval(intervaloSlideDesafio);
 
   if (momento === 'RECEPÇÃO DOS CONVIDADOS') {
     if(badge) badge.style.display = 'none';
@@ -98,8 +107,25 @@ async function atualizarVisualTelao(momento) {
       if(data && data.length > 0) {
         fotosCatAtuais = data.map(f => f.url);
         if(canvas) canvas.src = fotosCatAtuais[0];
-        slideIndex = 0;
-        rodarSlideshow();
+        slideIndexCat = 0;
+        rodarSlideshowCat();
+      } else {
+        if(containerMidia) containerMidia.style.display = 'none';
+        if (arteFundoReal) { arteFundoReal.src = "arte-festa.jpg"; arteFundoReal.style.display = 'block'; }
+      }
+    } catch(e) { console.error(e); }
+  } else if (momento === 'SLIDESHOW DOS DESAFIOS') {
+    if (arteFundoReal) arteFundoReal.style.display = 'none';
+    if(badge) badge.style.display = 'none';
+    if(containerMidia) containerMidia.style.display = 'block';
+    
+    try {
+      const { data } = await client.from('fotos_desafios').select('url').eq('aprovada', true);
+      if(data && data.length > 0) {
+        fotosDesafiosAtuais = data.map(f => f.url);
+        if(canvas) canvas.src = fotosDesafiosAtuais[0];
+        slideIndexDesafio = 0;
+        rodarSlideshowDesafios();
       } else {
         if(containerMidia) containerMidia.style.display = 'none';
         if (arteFundoReal) { arteFundoReal.src = "arte-festa.jpg"; arteFundoReal.style.display = 'block'; }
@@ -115,21 +141,31 @@ async function atualizarVisualTelao(momento) {
   }
 }
 
-function rodarSlideshow() {
-  intervaloSlide = setInterval(() => {
+function rodarSlideshowCat() {
+  intervaloSlideCat = setInterval(() => {
     if(congelado || fotosCatAtuais.length === 0) return;
-    slideIndex = (slideIndex + 1) % fotosCatAtuais.length;
+    slideIndexCat = (slideIndexCat + 1) % fotosCatAtuais.length;
     const canvas = document.getElementById('telao-canvas');
-    if(canvas) canvas.src = fotosCatAtuais[slideIndex];
+    if(canvas) canvas.src = fotosCatAtuais[slideIndexCat];
+  }, 5000);
+}
+
+function rodarSlideshowDesafios() {
+  intervaloSlideDesafio = setInterval(() => {
+    if(congelado || fotosDesafiosAtuais.length === 0) return;
+    slideIndexDesafio = (slideIndexDesafio + 1) % fotosDesafiosAtuais.length;
+    const canvas = document.getElementById('telao-canvas');
+    if(canvas) canvas.src = fotosDesafiosAtuais[slideIndexDesafio];
   }, 5000);
 }
 
 function exibirFotoDestaqueNoTelao(url, legenda) {
-  clearInterval(intervaloSlide);
+  clearInterval(intervaloSlideCat);
+  clearInterval(intervaloSlideDesafio);
   const canvas = document.getElementById('telao-canvas');
   const containerMidia = document.getElementById('telao-container-midia');
   const badge = document.getElementById('telao-subtitulo');
-  const arteFundoReal = document.getElementById('telao-arte-fundo-real');
+  const arteFundoReal = document.getElementById('arte-fundo-real') || document.getElementById('telao-arte-fundo-real');
   
   if (arteFundoReal) arteFundoReal.style.display = 'none';
   if(containerMidia) containerMidia.style.display = 'block';
@@ -144,11 +180,12 @@ function exibirFotoDestaqueNoTelao(url, legenda) {
   }, 8000);
 }
 
+// Uploads
 async function uploadFotoCat(input) {
   if (!input.files || input.files.length === 0 || !client) return;
   const file = input.files[0];
   const fileName = `cat_${Date.now()}_${file.name}`;
-  const { data, error } = await client.storage.from('festa-cat').upload(fileName, file);
+  const { error } = await client.storage.from('festa-cat').upload(fileName, file);
   if (error) return alert('Erro no upload: ' + error.message);
   const { data: urlData } = client.storage.from('festa-cat').getPublicUrl(fileName);
   await client.from('fotos_catarina').insert({ url: urlData.publicUrl });
@@ -158,16 +195,17 @@ async function uploadFotoCat(input) {
 async function uploadFotoDesafioAdmin(input) {
   if (!input.files || input.files.length === 0 || !client) return;
   const status = document.getElementById('admin-upload-status');
-  if(status) status.innerText = "Enviando desafio para o telão... ";
+  if(status) status.innerText = "Enviando... ";
   const file = input.files[0];
   const desafio = document.getElementById('admin-escolha-desafio').value;
   const fileName = `admin_desafio_${Date.now()}_${file.name}`;
-  const { data, error } = await client.storage.from('desafios-festa').upload(fileName, file);
-  if(error) { if(status) status.innerText = "Erro ao enviar. Tente novamente!"; return; }
+  const { error } = await client.storage.from('desafios-festa').upload(fileName, file);
+  if(error) { if(status) status.innerText = "Erro ao enviar."; return; }
   const { data: urlData } = client.storage.from('desafios-festa').getPublicUrl(fileName);
   await client.from('fotos_desafios').insert({ url: urlData.publicUrl, desafio: desafio, aprovada: true });
-  if(status) status.innerText = "Desafio enviado com sucesso para o telão!";
+  if(status) status.innerText = "Enviado com sucesso!";
   setTimeout(() => { if(status) status.innerText = ""; }, 3000);
+  carregarFotosDesafiosControle();
 }
 
 async function uploadFotoMuralConvidado(input) {
@@ -176,23 +214,31 @@ async function uploadFotoMuralConvidado(input) {
   if(status) status.innerText = "Publicando no mural... ";
   const file = input.files[0];
   const fileName = `guest_mural_${Date.now()}_${file.name}`;
-  const { data, error } = await client.storage.from('desafios-festa').upload(fileName, file);
-  if(error) { if(status) status.innerText = "Erro ao publicar. Tente novamente!"; return; }
+  const { error } = await client.storage.from('desafios-festa').upload(fileName, file);
+  if(error) { if(status) status.innerText = "Erro ao publicar."; return; }
   const { data: urlData } = client.storage.from('desafios-festa').getPublicUrl(fileName);
   await client.from('memorias').insert({ url: urlData.publicUrl });
-  if(status) status.innerText = "Sua foto foi para o Mural de Memórias! ✨";
+  if(status) status.innerText = "Sua foto foi para o Mural! ✨";
   setTimeout(() => { if(status) status.innerText = ""; }, 3000);
 }
 
+// Mural de Memórias Interativo (Grade)
 async function carregarFotosMural() {
   if(!client) return;
   try {
     const { data } = await client.from('memorias').select('*').order('created_at', { ascending: false });
     const lista = document.getElementById('mural-lista-fotos');
+    const isAdmin = localStorage.getItem('admin_liberado') === 'true';
     if(lista && data) {
       lista.innerHTML = '';
       data.forEach(post => {
-        lista.innerHTML += `<div class="mural-post"><img src="${post.url}" class="mural-photo"><div class="mural-footer">Memória enviada por um convidado ✨</div></div>`;
+        let botaoExcluir = isAdmin ? `<button class="mural-del-btn" onclick="deletarFotoMural('${post.id}')">✕</button>` : '';
+        lista.innerHTML += `
+          <div class="mural-post">
+            <img src="${post.url}" class="mural-photo">
+            ${botaoExcluir}
+            <div class="mural-footer">Memória enviada por um convidado ✨</div>
+          </div>`;
       });
     }
   } catch(e) { console.error(e); }
@@ -201,12 +247,14 @@ async function carregarFotosMural() {
 function ouvirNovasFotosMural() {
   if(!client) return;
   client.channel('mural-stream').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'memorias' }, payload => {
-    const post = payload.new;
-    const lista = document.getElementById('mural-lista-fotos');
-    if(lista) {
-      lista.innerHTML = `<div class="mural-post"><img src="${post.url}" class="mural-photo"><div class="mural-footer">Memória enviada por um convidado ✨</div></div>` + lista.innerHTML;
-    }
+    carregarFotosMural();
   }).subscribe();
+}
+
+async function deletarFotoMural(id) {
+  if(!client) return;
+  await client.from('memorias').delete().eq('id', id);
+  carregarFotosMural();
 }
 
 async function removerFotoCat(id) {
@@ -215,8 +263,15 @@ async function removerFotoCat(id) {
   carregarFotosCatControle();
 }
 
+async function removerFotoDesafio(id) {
+  if(!client) return;
+  await client.from('fotos_desafios').delete().eq('id', id);
+  carregarFotosDesafiosControle();
+}
+
 async function carregarDadosControle() {
   carregarFotosCatControle();
+  carregarFotosDesafiosControle();
   carregarCronograma();
   carregarConvidados();
   ouvirFotosDosConvidados();
@@ -236,6 +291,28 @@ async function carregarFotosCatControle() {
   } catch(e) { console.error(e); }
 }
 
+async function carregarFotosDesafiosControle() {
+  const lista = document.getElementById('lista-desafios-stream');
+  if(!client || !lista) return;
+  try {
+    const { data } = await client.from('fotos_desafios').select('*').order('created_at', { ascending: false });
+    if(data) {
+      lista.innerHTML = '';
+      data.forEach(f => {
+        lista.innerHTML += `
+          <div class="desafio-item" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; background:#fff0f5; padding:8px; border-radius:8px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <img src="${f.url}" class="desafio-thumb" style="width:50px; height:50px; object-fit:cover; border-radius:6px;">
+              <div class="desafio-text"><b>${f.desafio}</b></div>
+            </div>
+            <button onclick="removerFotoDesafio('${f.id}')" style="background:#ff4d4d; color:white; border:none; border-radius:50%; width:25px; height:25px; cursor:pointer;">✕</button>
+          </div>`;
+      });
+    }
+  } catch(e) { console.error(e); }
+}
+
+// Cronograma com Título, Texto Longo e Exclusão
 async function carregarCronograma() {
   if(!client) return;
   try {
@@ -244,7 +321,17 @@ async function carregarCronograma() {
     if(lista && data) {
       lista.innerHTML = '';
       data.forEach(item => {
-        lista.innerHTML += `<div class="crono-item ${item.concluido ? 'done' : ''}" onclick="toggleCrono('${item.id}', ${item.concluido})"><div class="crono-check">✓</div><div class="crono-hora">${item.hora}</div><div class="crono-texto">${item.texto}</div></div>`;
+        lista.innerHTML += `
+          <div class="crono-item ${item.concluido ? 'done' : ''}" style="background:white; padding:15px; border-radius:10px; margin-bottom:10px; border-left:5px solid #d4af37;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <b style="font-size:16px; color:#b76e79;">${item.hora} - ${item.titulo || 'Momento'}</b>
+              <div>
+                <button onclick="toggleCrono('${item.id}', ${item.concluido})" style="background:#28a745; color:white; border:none; padding:4px 8px; border-radius:5px; cursor:pointer; margin-right:5px;">✓ Feito</button>
+                <button onclick="deletarCronograma('${item.id}')" style="background:#dc3545; color:white; border:none; padding:4px 8px; border-radius:5px; cursor:pointer;">✕</button>
+              </div>
+            </div>
+            <p style="margin-top:8px; white-space:pre-wrap; color:#555;">${item.texto || ''}</p>
+          </div>`;
       });
     }
   } catch(e) { console.error(e); }
@@ -252,9 +339,11 @@ async function carregarCronograma() {
 
 async function adicionarCronograma() {
   const hora = document.getElementById('crono-novo-horario').value;
+  const titulo = document.getElementById('crono-novo-titulo') ? document.getElementById('crono-novo-titulo').value : '';
   const texto = document.getElementById('crono-novo-texto').value;
-  if(!hora || !texto || !client) return;
-  await client.from('cronograma').insert({ hora, texto, concluido: false });
+  if(!hora || !client) return;
+  await client.from('cronograma').insert({ hora, titulo, texto, concluido: false });
+  if(document.getElementById('crono-novo-titulo')) document.getElementById('crono-novo-titulo').value = '';
   document.getElementById('crono-novo-horario').value = '';
   document.getElementById('crono-novo-texto').value = '';
   carregarCronograma();
@@ -263,6 +352,12 @@ async function adicionarCronograma() {
 async function toggleCrono(id, status) {
   if(!client) return;
   await client.from('cronograma').update({ concluido: !status }).eq('id', id);
+  carregarCronograma();
+}
+
+async function deletarCronograma(id) {
+  if(!client) return;
+  await client.from('cronograma').delete().eq('id', id);
   carregarCronograma();
 }
 
@@ -308,10 +403,7 @@ function ouvirFotosDosConvidados() {
   const lista = document.getElementById('lista-desafios-stream');
   if(!client) return;
   client.channel('stream-controle').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'fotos_desafios' }, payload => {
-    const f = payload.new;
-    if(lista) {
-      lista.innerHTML = `<div class="desafio-item"><img src="${f.url}" class="desafio-thumb"><div class="desafio-text"><b>${f.desafio}</b> enviado agora!</div></div>` + lista.innerHTML;
-    }
+    carregarFotosDesafiosControle();
   }).subscribe();
 }
 
