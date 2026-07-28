@@ -1,8 +1,8 @@
 const SUPABASE_URL = 'https://supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhycXFyaXliY3BtbnNpbnN3eW9wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2NDE0MTEsImV4cCI6MjEwMDc4NDQ0OH0.IasE0zT3L58GAnE0S8rRThf4hC1Lz8S9jF1R8vX9zWk';
 
-// CORREÇÃO CIRÚRGICA: Usa window.supabase para chamar a biblioteca do unpkg sem conflito de nomes
-const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+// Inicialização sem o 'window.' para garantir leitura imediata da biblioteca do unpkg
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let congelado = false;
 let fotosCatAtuais = [];
@@ -42,20 +42,26 @@ async function toggleCongelar() {
     btn.innerText = congelado ? "TELÃO: CONGELADO" : "CONGELAR TELÃO: OFF";
     btn.classList.toggle('frozen', congelado);
   }
-  if (supabase) await supabase.from('config').upsert({ id: 1, congelado: congelado });
+  try {
+    await supabase.from('config').upsert({ id: 1, congelado: congelado });
+  } catch(e) { console.error(e); }
 }
 
 async function setMomento(nome) {
-  if (supabase) await supabase.from('config').upsert({ id: 1, momento_atual: nome });
+  try {
+    await supabase.from('config').upsert({ id: 1, momento_atual: nome });
+  } catch(e) { console.error(e); }
 }
 
 async function inicializarTelão() {
   if (!supabase) return;
-  const { data: configInit } = await supabase.from('config').select('*').eq('id', 1).single();
-  if(configInit) {
-    congelado = configInit.congelado;
-    atualizarVisualTelao(configInit.momento_atual);
-  }
+  try {
+    const { data: configInit } = await supabase.from('config').select('*').eq('id', 1).single();
+    if(configInit) {
+      congelado = configInit.congelado;
+      atualizarVisualTelao(configInit.momento_atual);
+    }
+  } catch(e) { console.error(e); }
   
   supabase.channel('config-alteracoes').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'config' }, payload => {
     const config = payload.new;
@@ -88,16 +94,18 @@ async function atualizarVisualTelao(momento) {
     if(badge) badge.style.display = 'none';
     if(containerMidia) containerMidia.style.display = 'block';
     
-    const { data } = await supabase.from('fotos_catarina').select('url');
-    if(data && data.length > 0) {
-      fotosCatAtuais = data.map(f => f.url);
-      if(canvas) canvas.src = fotosCatAtuais;
-      slideIndex = 0;
-      rodarSlideshow();
-    } else {
-      if(containerMidia) containerMidia.style.display = 'none';
-      if (arteFundoReal) { arteFundoReal.src = "arte-festa.jpg"; arteFundoReal.style.display = 'block'; }
-    }
+    try {
+      const { data } = await supabase.from('fotos_catarina').select('url');
+      if(data && data.length > 0) {
+        fotosCatAtuais = data.map(f => f.url);
+        if(canvas) canvas.src = fotosCatAtuais[0];
+        slideIndex = 0;
+        rodarSlideshow();
+      } else {
+        if(containerMidia) containerMidia.style.display = 'none';
+        if (arteFundoReal) { arteFundoReal.src = "arte-festa.jpg"; arteFundoReal.style.display = 'block'; }
+      }
+    } catch(e) { console.error(e); }
   } else {
     if(containerMidia) containerMidia.style.display = 'none';
     if (arteFundoReal) { arteFundoReal.src = "arte-festa.jpg"; arteFundoReal.style.display = 'block'; }
@@ -138,7 +146,7 @@ function exibirFotoDestaqueNoTelao(url, legenda) {
 }
 async function uploadFotoCat(input) {
   if (!input.files || input.files.length === 0 || !supabase) return;
-  const file = input.files;
+  const file = input.files[0];
   const fileName = `cat_${Date.now()}_${file.name}`;
   const { data, error } = await supabase.storage.from('festa-cat').upload(fileName, file);
   if (error) return alert('Erro no upload: ' + error.message);
@@ -151,7 +159,7 @@ async function uploadFotoDesafioAdmin(input) {
   if (!input.files || input.files.length === 0 || !supabase) return;
   const status = document.getElementById('admin-upload-status');
   if(status) status.innerText = "Enviando desafio para o telão... ";
-  const file = input.files;
+  const file = input.files[0];
   const desafio = document.getElementById('admin-escolha-desafio').value;
   const fileName = `admin_desafio_${Date.now()}_${file.name}`;
   const { data, error } = await supabase.storage.from('desafios-festa').upload(fileName, file);
@@ -166,7 +174,7 @@ async function uploadFotoMuralConvidado(input) {
   if (!input.files || input.files.length === 0 || !supabase) return;
   const status = document.getElementById('upload-status');
   if(status) status.innerText = "Publicando no mural... ";
-  const file = input.files;
+  const file = input.files[0];
   const fileName = `guest_mural_${Date.now()}_${file.name}`;
   const { data, error } = await supabase.storage.from('desafios-festa').upload(fileName, file);
   if(error) { if(status) status.innerText = "Erro ao publicar. Tente novamente!"; return; }
@@ -178,14 +186,16 @@ async function uploadFotoMuralConvidado(input) {
 
 async function carregarFotosMural() {
   if(!supabase) return;
-  const { data } = await supabase.from('memorias').select('*').order('created_at', { ascending: false });
-  const lista = document.getElementById('mural-lista-fotos');
-  if(lista && data) {
-    lista.innerHTML = '';
-    data.forEach(post => {
-      lista.innerHTML += `<div class="mural-post"><img src="${post.url}" class="mural-photo"><div class="mural-footer">Memória enviada por um convidado ✨</div></div>`;
-    });
-  }
+  try {
+    const { data } = await supabase.from('memorias').select('*').order('created_at', { ascending: false });
+    const lista = document.getElementById('mural-lista-fotos');
+    if(lista && data) {
+      lista.innerHTML = '';
+      data.forEach(post => {
+        lista.innerHTML += `<div class="mural-post"><img src="${post.url}" class="mural-photo"><div class="mural-footer">Memória enviada por um convidado ✨</div></div>`;
+      });
+    }
+  } catch(e) { console.error(e); }
 }
 
 function ouvirNovasFotosMural() {
@@ -206,7 +216,6 @@ async function removerFotoCat(id) {
 }
 
 async function carregarDadosControle() {
-  if(!supabase) return;
   carregarFotosCatControle();
   carregarCronograma();
   carregarConvidados();
@@ -214,25 +223,31 @@ async function carregarDadosControle() {
 }
 
 async function carregarFotosCatControle() {
-  const { data } = await supabase.from('fotos_catarina').select('*');
-  const grid = document.getElementById('grid-fotos-cat');
-  if(grid && data) {
-    grid.innerHTML = '';
-    data.forEach(foto => {
-      grid.innerHTML += `<div class="photo-slot"><img src="${foto.url}"><button class="remove-btn" onclick="removerFotoCat('${foto.id}')">✕</button></div>`;
-    });
-  }
+  if(!supabase) return;
+  try {
+    const { data } = await supabase.from('fotos_catarina').select('*');
+    const grid = document.getElementById('grid-fotos-cat');
+    if(grid && data) {
+      grid.innerHTML = '';
+      data.forEach(foto => {
+        grid.innerHTML += `<div class="photo-slot"><img src="${foto.url}"><button class="remove-btn" onclick="removerFotoCat('${foto.id}')">✕</button></div>`;
+      });
+    }
+  } catch(e) { console.error(e); }
 }
 
 async function carregarCronograma() {
-  const { data } = await supabase.from('cronograma').select('*').order('hora');
-  const lista = document.getElementById('cronograma-lista');
-  if(lista && data) {
-    lista.innerHTML = '';
-    data.forEach(item => {
-      lista.innerHTML += `<div class="crono-item ${item.concluido ? 'done' : ''}" onclick="toggleCrono('${item.id}', ${item.concluido})"><div class="crono-check">✓</div><div class="crono-hora">${item.hora}</div><div class="crono-texto">${item.texto}</div></div>`;
-    });
-  }
+  if(!supabase) return;
+  try {
+    const { data } = await supabase.from('cronograma').select('*').order('hora');
+    const lista = document.getElementById('cronograma-lista');
+    if(lista && data) {
+      lista.innerHTML = '';
+      data.forEach(item => {
+        lista.innerHTML += `<div class="crono-item ${item.concluido ? 'done' : ''}" onclick="toggleCrono('${item.id}', ${item.concluido})"><div class="crono-check">✓</div><div class="crono-hora">${item.hora}</div><div class="crono-texto">${item.texto}</div></div>`;
+      });
+    }
+  } catch(e) { console.error(e); }
 }
 
 async function adicionarCronograma() {
@@ -252,18 +267,21 @@ async function toggleCrono(id, status) {
 }
 
 async function carregarConvidados() {
-  const { data } = await supabase.from('convidados').select('*').order('nome');
-  const lista = document.getElementById('convidados-lista');
-  let presentes = 0;
-  if(lista && data) {
-    lista.innerHTML = '';
-    data.forEach(c => {
-      if(c.presente) presentes++;
-      lista.innerHTML += `<div class="convidado-item ${c.presente ? 'presente' : ''}" onclick="togglePresenca('${c.id}', ${c.presente})"><div class="conv-check">✓</div><div class="conv-nome">${c.nome}</div><button class="conv-del" onclick="event.stopPropagation(); deletarConvidado('${c.id}')">✕</button></div>`;
-    });
-  }
-  const contador = document.getElementById('conv-contador');
-  if(contador) contador.innerText = `Presentes: ${presentes} | Total: ${data ? data.length : 0}`;
+  if(!supabase) return;
+  try {
+    const { data } = await supabase.from('convidados').select('*').order('nome');
+    const lista = document.getElementById('convidados-lista');
+    let presentes = 0;
+    if(lista && data) {
+      lista.innerHTML = '';
+      data.forEach(c => {
+        if(c.presente) presentes++;
+        lista.innerHTML += `<div class="convidado-item ${c.presente ? 'presente' : ''}" onclick="togglePresenca('${c.id}', ${c.presente})"><div class="conv-check">✓</div><div class="conv-nome">${c.nome}</div><button class="conv-del" onclick="event.stopPropagation(); deletarConvidado('${c.id}')">✕</button></div>`;
+      });
+    }
+    const contador = document.getElementById('conv-contador');
+    if(contador) contador.innerText = `Presentes: ${presentes} | Total: ${data ? data.length : 0}`;
+  } catch(e) { console.error(e); }
 }
 
 async function adicionarConvidado() {
