@@ -6,8 +6,8 @@
     <title>Torre de Comando - 15 Anos Catarina</title>
     <link href="https://googleapis.com" rel="stylesheet">
     
-    <!-- CARREGAMENTO DO SUPABASE NO TOPO DO ARQUIVO -->
-    <script src="https://jsdelivr.net"></script>
+    <!-- LINK DO SERVIDOR ALTERNATIVO - ANTI-BLOQUEIO DO WI-FI -->
+    <script src="https://unpkg.com"></script>
     
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -79,7 +79,7 @@
                 <button class="moment-btn" onclick="setMomento('SLIDESHOW DA CATARINA')">Slideshow da Catarina</button>
             </div>
         </div>
-        <!-- Aba 2: Fotos de Crescimento (Slideshow) -->
+
         <div id="screen-fotos" class="screen">
             <h2 class="section-title">Fotos de Crescimento</h2>
             <p class="section-sub">Suba as fotos previamente para o carrossel do jantar</p>
@@ -90,7 +90,6 @@
             </label>
         </div>
 
-        <!-- Aba 3: Disparador de Desafios em Tempo Real -->
         <div id="screen-desafios" class="screen">
             <h2 class="section-title">Lançar Desafio</h2>
             <p class="section-sub">Selecione o desafio, tire a foto e mande pro telão</p>
@@ -107,7 +106,6 @@
             <div class="desafio-queue" id="lista-desafios-stream" style="margin-top:20px;"></div>
         </div>
         
-        <!-- Aba 4: Cronograma de Horários -->
         <div id="screen-cronograma" class="screen">
             <h2 class="section-title">Cronograma</h2>
             <div class="crono-list" id="cronograma-lista"></div>
@@ -118,7 +116,6 @@
             </div>
         </div>
         
-        <!-- Aba 5: Portaria / Lista de Convidados -->
         <div id="screen-convidados" class="screen">
             <h2 class="section-title">Portaria</h2>
             <div class="convidados-list" id="convidados-lista"></div>
