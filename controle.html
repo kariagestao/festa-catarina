@@ -34,8 +34,24 @@
     .upload-label input { display: none; }
     .convidado-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: #ffffff; border-radius: 16px; margin-bottom: 8px; border: 1px solid rgba(200,150,62,0.3); cursor: pointer; width: 100%; }
     .convidado-item.presente { background: rgba(40,167,69,0.08); border-color: #28a745; }
-    .conv-check { font-weight: bold; color: #28a745; opacity: 0; }
-    .convidado-item.presente .conv-check { opacity: 1; }
+    .conv-check { 
+      width: 24px;
+      height: 24px;
+      border: 2px solid #b8860b !important; 
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: white;
+      color: transparent;
+      font-weight: bold;
+      transition: all 0.2s;
+    }
+    .convidado-item.presente .conv-check { 
+      background: #b8860b !important;
+      color: white !important;
+      border-color: #b8860b !important;
+    }
     .conv-nome { font-family: 'Playfair Display', serif; font-size: 1rem; color: #7A4F0E; }
     .conv-del { background: none; border: none; color: #cd0277; font-size: 14px; cursor: pointer; padding: 4px; }
     .crono-item { background: #ffffff; padding: 16px; border-radius: 16px; margin-bottom: 12px; border: 1px solid rgba(200,150,62,0.3); box-shadow: 0 4px 15px rgba(0,0,0,0.02); width: 100%; }
@@ -118,7 +134,7 @@
       <option value="Envelope 20: Tire uma foto com o seu grupo de amigos fazendo uma careta.">Envelope 20: Amigos fazendo careta</option>
     </select>
     <label class="upload-label">
-      📸 Fotografar e Enviar
+      📁 Selecionar da Galeria ou Câmera
       <input type="file" id="input-foto-desafio-admin" accept="image/*" onchange="uploadFotoDesafioAdmin(this)">
     </label>
     <p id="admin-upload-status" style="margin-top:5px; font-family:'Playfair Display'; font-style:italic; color:#9B6B1A;"></p>
@@ -141,6 +157,9 @@
     <h2 class="section-title">Portaria</h2>
     <p class="section-subtitle">Controle de presença dos convidados</p>
     <div id="conv-contador" style="margin-bottom: 15px; font-weight: bold; color: #9B6B1A; font-family:'Playfair Display';"></div>
+    <div style="margin-bottom: 12px; width: 100%;">
+      <input type="text" id="input-busca-convidado" placeholder="🔍 Pesquisar convidado..." oninput="filtrarConvidados()" style="margin-bottom:0;">
+    </div>
     <div style="display:flex; gap:10px; width:100%; margin-bottom:15px;">
       <input type="text" id="conv-novo-nome" placeholder="Nome do Convidado" style="margin-bottom:0;">
       <button class="action-btn" style="width:140px; background:#9B6B1A; color:white; padding:0;" onclick="adicionarConvidado()">Adicionar</button>
