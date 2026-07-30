@@ -12,7 +12,7 @@ let momentoGlobal = 'RECEPÇÃO DOS CONVIDADOS';
 let intervaloSlideCat = null;
 let intervaloSlideDesafio = null;
 let editandoId = null;
-let listaConvidadosGlobal = []; // Guarda os convidados para a busca funcionar instantaneamente
+let listaConvidadosGlobal = [];
 
 function inicializarSistemaPorPagina() {
   const testePainelControle = document.getElementById('grid-fotos-cat');
@@ -61,7 +61,6 @@ async function setMomento(nome) {
   } catch(e) { console.error(e); }
 }
 
-// FUNÇÃO DA HOMENAGEM AOS AVÓS
 async function exibirHomenagemAvos() {
   if (!client) return;
   
@@ -461,8 +460,8 @@ async function carregarConvidados() {
   try {
     const { data } = await client.from('convidados').select('*').order('nome');
     if(data) {
-      listaConvidadosGlobal = data; // Armazena na memória global para a busca
-      renderizarListaConvidados(data);
+      listaConvidadosGlobal = data; 
+      filtrarConvidados(); // Aplica o filtro atual caso haja algo digitado na caixa
     }
   } catch(e) { console.error(e); }
 }
@@ -474,30 +473,31 @@ function renderizarListaConvidados(dados) {
     lista.innerHTML = '';
     if(dados.length === 0) {
       lista.innerHTML = `<div style="text-align:center; padding:20px; font-family:'Playfair Display'; color:#7A4F0E; font-size:0.95rem;">Nenhum convidado encontrado.</div>`;
+    } else {
+      dados.forEach(c => {
+        if(c.presente) presentes++;
+        lista.innerHTML += `
+          <div class="convidado-item ${c.presente ? 'presente' : ''}" onclick="togglePresenca('${c.id}', ${c.presente})">
+            <div class="conv-check">✓</div>
+            <div class="conv-nome">${c.nome}</div>
+            <button class="conv-del" onclick="event.stopPropagation(); deletarConvidado('${c.id}')">✕</button>
+          </div>`;
+      });
     }
-    dados.forEach(c => {
-      if(c.presente) presentes++;
-      lista.innerHTML += `
-        <div class="convidado-item ${c.presente ? 'presente' : ''}" onclick="togglePresenca('${c.id}', ${c.presente})">
-          <div class="conv-check">✓</div>
-          <div class="conv-nome">${c.nome}</div>
-          <button class="conv-del" onclick="event.stopPropagation(); deletarConvidado('${c.id}')">✕</button>
-        </div>`;
-    });
   }
   const contador = document.getElementById('conv-contador');
   if(contador) contador.innerText = `Presentes: ${presentes} | Total: ${listaConvidadosGlobal.length}`;
 }
 
-// Função para remover acentos e pesquisar perfeitamente
 function normalizarTexto(texto) {
+  if (!texto) return "";
   return texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 }
 
 function filtrarConvidados() {
   const campoBusca = document.getElementById('input-busca-convidado');
-  if (!campoBusca) return;
-  const termo = normalizarTexto(campoBusca.value);
+  const termo = campoBusca ? normalizarTexto(campoBusca.value) : "";
+  
   const filtrados = listaConvidadosGlobal.filter(c => normalizarTexto(c.nome).includes(termo));
   renderizarListaConvidados(filtrados);
 }
